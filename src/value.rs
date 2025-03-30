@@ -67,37 +67,6 @@ impl Value {
     }
 }
 
-struct BackpropIterator {
-    visited: HashSet<i64>,
-    to_visit: Vec<Value>,
-}
-
-impl BackpropIterator {
-    fn new(root: Value) -> Self {
-        BackpropIterator {
-            visited: HashSet::new(),
-            to_visit: vec![root],
-        }
-    }
-}
-
-impl Iterator for BackpropIterator {
-    type Item = Value;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        while let Some(value) = self.to_visit.pop() {
-            let ptr = Rc::as_ptr(&value.0) as i64;
-            if self.visited.contains(&ptr) {
-                continue;
-            }
-            self.to_visit.extend(value.children());
-            return Some(value.clone());
-        }
-
-        None
-    }
-}
-
 impl Display for Value {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0.borrow())
@@ -160,6 +129,37 @@ impl Display for InnerValue {
             ValueType::Sum(a, b) => write!(f, "({} + {})", a, b),
             ValueType::Mul(a, b) => write!(f, "({} * {})", a, b),
         }
+    }
+}
+
+struct BackpropIterator {
+    visited: HashSet<i64>,
+    to_visit: Vec<Value>,
+}
+
+impl BackpropIterator {
+    fn new(root: Value) -> Self {
+        BackpropIterator {
+            visited: HashSet::new(),
+            to_visit: vec![root],
+        }
+    }
+}
+
+impl Iterator for BackpropIterator {
+    type Item = Value;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        while let Some(value) = self.to_visit.pop() {
+            let ptr = Rc::as_ptr(&value.0) as i64;
+            if self.visited.contains(&ptr) {
+                continue;
+            }
+            self.to_visit.extend(value.children());
+            return Some(value.clone());
+        }
+
+        None
     }
 }
 
