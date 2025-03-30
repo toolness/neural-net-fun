@@ -69,11 +69,11 @@ fn main() {
 
     {
         let mut ctx = Context::default();
-        let x = ctx.param(1.0);
-        let y = ctx.param(3.0);
+        let x = ctx.param("x".into(), 1.0);
+        let y = ctx.param("y".into(), 3.0);
         let sum = ctx.sum(x, y);
-        println!("{}", ctx.compute(sum));
+        println!("{} = {}", ctx.expr(sum), ctx.compute(sum));
         ctx.set(x, 2.0);
-        println!("{}", ctx.compute(sum));
+        println!("{} = {}", ctx.expr(sum), ctx.compute(sum));
     }
 }
