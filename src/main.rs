@@ -75,5 +75,8 @@ fn main() {
         println!("{} = {}", ctx.expr(sum), ctx.compute(sum));
         ctx.set(x, 2.0);
         println!("{} = {}", ctx.expr(sum), ctx.compute(sum));
+
+        let double_sum = ctx.sum(sum, sum);
+        println!("{} = {}", ctx.expr(double_sum), ctx.compute(double_sum));
     }
 }
