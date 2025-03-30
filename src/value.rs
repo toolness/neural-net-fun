@@ -39,8 +39,7 @@ impl Value {
     fn children(&self) -> Vec<Value> {
         match &self.0.borrow()._type {
             ValueType::Float(_) => vec![],
-            ValueType::Mul(a, b) => vec![a.clone(), b.clone()],
-            ValueType::Sum(a, b) => vec![a.clone(), b.clone()],
+            ValueType::BinaryOp(_, a, b) => vec![a.clone(), b.clone()],
         }
     }
 
@@ -55,11 +54,11 @@ impl Value {
         let value = &self.0.borrow();
         match &value._type {
             ValueType::Float(_) => {}
-            ValueType::Sum(a, b) => {
+            ValueType::BinaryOp(BinaryOp::Sum, a, b) => {
                 a.0.borrow_mut().grad += value.grad;
                 b.0.borrow_mut().grad += value.grad;
             }
-            ValueType::Mul(a, b) => {
+            ValueType::BinaryOp(BinaryOp::Mul, a, b) => {
                 a.0.borrow_mut().grad += b.0.borrow().value * value.grad;
                 b.0.borrow_mut().grad += a.0.borrow().value * value.grad;
             }
@@ -78,7 +77,7 @@ impl Add<Value> for Value {
 
     fn add(self, rhs: Value) -> Self::Output {
         InnerValue::new(
-            ValueType::Sum(self.clone(), rhs.clone()),
+            ValueType::BinaryOp(BinaryOp::Sum, self.clone(), rhs.clone()),
             self.as_f64() + rhs.as_f64(),
         )
         .into()
@@ -90,7 +89,7 @@ impl Mul<Value> for Value {
 
     fn mul(self, rhs: Value) -> Self::Output {
         InnerValue::new(
-            ValueType::Mul(self.clone(), rhs.clone()),
+            ValueType::BinaryOp(BinaryOp::Mul, self.clone(), rhs.clone()),
             self.as_f64() * rhs.as_f64(),
         )
         .into()
@@ -98,10 +97,28 @@ impl Mul<Value> for Value {
 }
 
 #[derive(Debug)]
+enum BinaryOp {
+    Sum,
+    Mul,
+}
+
+impl Display for BinaryOp {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                BinaryOp::Sum => "+",
+                BinaryOp::Mul => "*",
+            }
+        )
+    }
+}
+
+#[derive(Debug)]
 enum ValueType {
     Float(Option<String>),
-    Sum(Value, Value),
-    Mul(Value, Value),
+    BinaryOp(BinaryOp, Value, Value),
 }
 
 #[derive(Debug)]
@@ -126,8 +143,7 @@ impl Display for InnerValue {
         match &self._type {
             ValueType::Float(Some(name)) => write!(f, "{name}"),
             ValueType::Float(None) => write!(f, "{}", self.value),
-            ValueType::Sum(a, b) => write!(f, "({} + {})", a, b),
-            ValueType::Mul(a, b) => write!(f, "({} * {})", a, b),
+            ValueType::BinaryOp(op, a, b) => write!(f, "({a} {op} {b})"),
         }
     }
 }
