@@ -1,9 +1,49 @@
+use std::{cell::RefCell, fmt::Display, ops::Add};
+
 #[derive(Debug, Clone, Copy)]
 pub struct NodeId(usize);
+
+impl NodeId {
+    pub fn compute(&self) -> f64 {
+        CONTEXT.with_borrow(|ctx| ctx.compute(*self))
+    }
+
+    pub fn set(&mut self, value: f64) {
+        CONTEXT.with_borrow_mut(|ctx| ctx.set(*self, value))
+    }
+}
+
+impl Display for NodeId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", CONTEXT.with_borrow(|ctx| ctx.expr(*self)))
+    }
+}
+
+impl Add<NodeId> for NodeId {
+    type Output = NodeId;
+
+    fn add(self, rhs: NodeId) -> Self::Output {
+        CONTEXT.with_borrow_mut(|ctx| ctx.sum(self, rhs))
+    }
+}
+
+impl From<f64> for NodeId {
+    fn from(value: f64) -> Self {
+        CONTEXT.with_borrow_mut(|ctx| ctx.param(String::default(), value))
+    }
+}
+
+pub fn new_param<T: AsRef<str>>(name: T, value: f64) -> NodeId {
+    CONTEXT.with_borrow_mut(|ctx| ctx.param(name.as_ref().to_owned(), value))
+}
 
 enum Node {
     Float(String, f64),
     Sum(NodeId, NodeId),
+}
+
+thread_local! {
+    static CONTEXT: RefCell<Context> = RefCell::new(Context::default());
 }
 
 #[derive(Default)]
@@ -50,7 +90,13 @@ impl Context {
 
     pub fn expr(&self, node: NodeId) -> String {
         match self.get_node(node) {
-            Node::Float(name, _) => name.clone(),
+            Node::Float(name, value) => {
+                if name.len() > 0 {
+                    name.clone()
+                } else {
+                    format!("{value}")
+                }
+            }
             Node::Sum(a, b) => format!("({} + {})", self.expr(*a), self.expr(*b)),
         }
     }

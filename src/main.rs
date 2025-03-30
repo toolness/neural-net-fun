@@ -2,7 +2,7 @@ mod context;
 
 use std::{cell::RefCell, ops::Add, rc::Rc};
 
-use context::Context;
+use context::{new_param, Context};
 
 #[derive(Debug, Clone)]
 pub struct Param(Rc<RefCell<f64>>);
@@ -78,5 +78,13 @@ fn main() {
 
         let double_sum = ctx.sum(sum, sum);
         println!("{} = {}", ctx.expr(double_sum), ctx.compute(double_sum));
+    }
+
+    {
+        let mut x = new_param("x", 1.0);
+        let sum = x + 3.0.into();
+        println!("{sum} = {}", sum.compute());
+        x.set(2.0);
+        println!("{sum} = {}", sum.compute());
     }
 }
