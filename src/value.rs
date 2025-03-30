@@ -157,7 +157,7 @@ mod tests {
 
     #[test]
     fn test_karpathy_example() {
-        // This example is taken from Karpathy's lecture:
+        // This example is taken from Karpathy's lecture at around 51:38:
         // https://www.youtube.com/watch?v=VMj-3S1tku0
         let a = Value::new_param("a", 2.0);
         let b = Value::new_param("b", -3.0);
