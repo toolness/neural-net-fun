@@ -44,28 +44,9 @@ impl Value {
         }
     }
 
-    // TODO: Consider converting to an iterator.
-    fn order_topologically(&self) -> Vec<Value> {
-        let visited: HashSet<i64> = HashSet::new();
-        let mut result = vec![];
-        let mut to_visit = vec![self.clone()];
-
-        while let Some(value) = to_visit.pop() {
-            let ptr = Rc::as_ptr(&value.0) as i64;
-            if visited.contains(&ptr) {
-                continue;
-            }
-            result.push(value.clone());
-            to_visit.extend(value.children());
-        }
-
-        result
-    }
-
     pub fn backward(&mut self) {
         self.0.borrow_mut().grad = 1.0;
-        let values = self.order_topologically();
-        for mut value in values {
+        for mut value in BackpropIterator::new(self.clone()) {
             value.local_backward();
         }
     }
@@ -83,6 +64,37 @@ impl Value {
                 b.0.borrow_mut().grad += a.0.borrow().value * value.grad;
             }
         }
+    }
+}
+
+struct BackpropIterator {
+    visited: HashSet<i64>,
+    to_visit: Vec<Value>,
+}
+
+impl BackpropIterator {
+    fn new(root: Value) -> Self {
+        BackpropIterator {
+            visited: HashSet::new(),
+            to_visit: vec![root],
+        }
+    }
+}
+
+impl Iterator for BackpropIterator {
+    type Item = Value;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        while let Some(value) = self.to_visit.pop() {
+            let ptr = Rc::as_ptr(&value.0) as i64;
+            if self.visited.contains(&ptr) {
+                continue;
+            }
+            self.to_visit.extend(value.children());
+            return Some(value.clone());
+        }
+
+        None
     }
 }
 
