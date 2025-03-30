@@ -1,34 +1,35 @@
-pub trait Value {
-    fn data(&self) -> f64;
+use std::ops::Add;
+
+#[derive(Debug)]
+pub enum Value {
+    Float(f64),
+    Sum(Box<Value>, Box<Value>),
 }
 
-pub struct FloatValue {
-    data: f64
-}
-
-impl FloatValue {
-    fn new(data: f64) -> Self {
-        FloatValue { data }
+impl From<f64> for Value {
+    fn from(val: f64) -> Self {
+        Value::Float(val)
     }
 }
 
-impl Value for FloatValue {
-    fn data(&self) -> f64 {
-        self.data
+impl Value {
+    fn compute(&self) -> f64 {
+        match self {
+            Value::Float(value) => *value,
+            Value::Sum(a, b) => a.compute() + b.compute(),
+        }
     }
 }
 
-pub struct SumValue {
-    left: Box<dyn Value>,
-    right: Box<dyn Value>
-}
+impl Add<Value> for Value {
+    type Output = Value;
 
-impl Value for SumValue {
-    fn data(&self) -> f64 {
-        self.left.data() + self.right.data()
+    fn add(self, rhs: Value) -> Self::Output {
+        Value::Sum(Box::new(self), Box::new(rhs))
     }
 }
 
 fn main() {
-    println!("hi");
+    let sum = Value::Float(5.0) + 3.0.into();
+    println!("hi {sum:?} = {}", sum.compute());
 }
