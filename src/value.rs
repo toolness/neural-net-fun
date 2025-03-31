@@ -36,9 +36,15 @@ impl Value {
         InnerValue::new(ValueType::Float(Some(name.as_ref().to_owned())), value).into()
     }
 
+    pub fn exp(value: Value) -> Value {
+        let exp = value.as_f64().exp();
+        InnerValue::new(ValueType::UnaryOp(UnaryOp::Exp, value), exp).into()
+    }
+
     fn children(&self) -> Vec<Value> {
         match &self.0.borrow()._type {
             ValueType::Float(_) => vec![],
+            ValueType::UnaryOp(_, value) => vec![value.clone()],
             ValueType::BinaryOp(_, a, b) => vec![a.clone(), b.clone()],
         }
     }
@@ -54,6 +60,9 @@ impl Value {
         let value = &self.0.borrow();
         match &value._type {
             ValueType::Float(_) => {}
+            ValueType::UnaryOp(UnaryOp::Exp, a) => {
+                a.0.borrow_mut().grad += value.value * value.grad;
+            }
             ValueType::BinaryOp(BinaryOp::Sum, a, b) => {
                 a.0.borrow_mut().grad += value.grad;
                 b.0.borrow_mut().grad += value.grad;
@@ -116,8 +125,26 @@ impl Display for BinaryOp {
 }
 
 #[derive(Debug)]
+enum UnaryOp {
+    Exp,
+}
+
+impl Display for UnaryOp {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                UnaryOp::Exp => "exp",
+            }
+        )
+    }
+}
+
+#[derive(Debug)]
 enum ValueType {
     Float(Option<String>),
+    UnaryOp(UnaryOp, Value),
     BinaryOp(BinaryOp, Value, Value),
 }
 
@@ -143,6 +170,7 @@ impl Display for InnerValue {
         match &self._type {
             ValueType::Float(Some(name)) => write!(f, "{name}"),
             ValueType::Float(None) => write!(f, "{}", self.value),
+            ValueType::UnaryOp(op, value) => write!(f, "{op}({value})"),
             ValueType::BinaryOp(op, a, b) => write!(f, "({a} {op} {b})"),
         }
     }
@@ -201,5 +229,14 @@ mod tests {
         assert_eq!(d.grad(), -2.0);
         assert_eq!(f.grad(), 4.0);
         assert_eq!(loss.grad(), 1.0);
+    }
+
+    #[test]
+    fn test_exp() {
+        let a = Value::new_param("a", 2.0);
+        let mut exp = Value::exp(a.clone());
+        exp.backward();
+        assert_eq!(exp.as_f64(), (2.0_f64).exp());
+        assert_eq!(a.grad(), (2.0_f64).exp());
     }
 }
