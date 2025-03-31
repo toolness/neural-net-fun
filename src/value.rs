@@ -2,7 +2,7 @@ use std::{
     cell::RefCell,
     collections::HashSet,
     fmt::Display,
-    ops::{Add, Mul},
+    ops::{Add, Mul, Sub},
     rc::Rc,
 };
 
@@ -78,6 +78,14 @@ impl Value {
 impl Display for Value {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0.borrow())
+    }
+}
+
+impl Sub<Value> for Value {
+    type Output = Value;
+
+    fn sub(self, rhs: Value) -> Self::Output {
+        self.clone() + (rhs.clone() * (-1.0).into())
     }
 }
 
@@ -238,5 +246,11 @@ mod tests {
         exp.backward();
         assert_eq!(exp.as_f64(), (2.0_f64).exp());
         assert_eq!(a.grad(), (2.0_f64).exp());
+    }
+
+    #[test]
+    fn test_sub() {
+        let diff = Value::new_param("a", 2.0) - (1.0).into();
+        assert_eq!(diff.as_f64(), 1.0);
     }
 }
