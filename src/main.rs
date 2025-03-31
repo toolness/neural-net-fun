@@ -9,7 +9,7 @@ fn main() {
     let e = a * b;
     let d = e + c;
     let f = Value::new_param("f", -2.0);
-    let mut loss = Value::exp(d * f);
+    let mut loss = (d * f).exp();
     loss.backward();
     println!("{loss} = {} (grad={})", loss.as_f64(), loss.grad());
     println!("{loss:#?}");

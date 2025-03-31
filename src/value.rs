@@ -29,16 +29,16 @@ impl Value {
     pub fn grad(&self) -> f64 {
         self.0.borrow().grad
     }
+
+    pub fn exp(&self) -> Value {
+        let exp = self.as_f64().exp();
+        InnerValue::new(ValueType::UnaryOp(UnaryOp::Exp, self.clone()), exp).into()
+    }
 }
 
 impl Value {
     pub fn new_param<T: AsRef<str>>(name: T, value: f64) -> Value {
         InnerValue::new(ValueType::Float(Some(name.as_ref().to_owned())), value).into()
-    }
-
-    pub fn exp(value: Value) -> Value {
-        let exp = value.as_f64().exp();
-        InnerValue::new(ValueType::UnaryOp(UnaryOp::Exp, value), exp).into()
     }
 
     fn children(&self) -> Vec<Value> {
@@ -234,7 +234,7 @@ mod tests {
     #[test]
     fn test_exp() {
         let a = Value::new_param("a", 2.0);
-        let mut exp = Value::exp(a.clone());
+        let mut exp = a.exp();
         exp.backward();
         assert_eq!(exp.as_f64(), (2.0_f64).exp());
         assert_eq!(a.grad(), (2.0_f64).exp());
