@@ -34,6 +34,15 @@ impl Value {
         let exp = self.as_f64().exp();
         InnerValue::new(ValueType::UnaryOp(UnaryOp::Exp, self.clone()), exp).into()
     }
+
+    pub fn pow(&self, value: f64) -> Value {
+        let pow = self.as_f64().powf(value);
+        InnerValue::new(
+            ValueType::BinaryOp(BinaryOp::Pow, self.clone(), value.into()),
+            pow,
+        )
+        .into()
+    }
 }
 
 impl Value {
@@ -62,6 +71,11 @@ impl Value {
             ValueType::Float(_) => {}
             ValueType::UnaryOp(UnaryOp::Exp, a) => {
                 a.0.borrow_mut().grad += value.value * value.grad;
+            }
+            ValueType::BinaryOp(BinaryOp::Pow, a, pow) => {
+                let a_f64 = a.0.borrow().value;
+                let pow_f64 = pow.0.borrow().value;
+                a.0.borrow_mut().grad += pow_f64 * a_f64.powf(pow_f64 - 1.0) * value.grad;
             }
             ValueType::BinaryOp(BinaryOp::Sum, a, b) => {
                 a.0.borrow_mut().grad += value.grad;
@@ -117,6 +131,7 @@ impl Mul<Value> for Value {
 enum BinaryOp {
     Sum,
     Mul,
+    Pow,
 }
 
 impl Display for BinaryOp {
@@ -127,6 +142,7 @@ impl Display for BinaryOp {
             match self {
                 BinaryOp::Sum => "+",
                 BinaryOp::Mul => "*",
+                BinaryOp::Pow => "^",
             }
         )
     }
@@ -252,5 +268,15 @@ mod tests {
     fn test_sub() {
         let diff = Value::new_param("a", 2.0) - (1.0).into();
         assert_eq!(diff.as_f64(), 1.0);
+    }
+
+    #[test]
+    fn test_pow() {
+        let a = Value::new_param("a", 3.0);
+        let mut a_squared = a.pow(2.0);
+        assert_eq!(a_squared.as_f64(), 9.0);
+        a_squared.backward();
+        assert_eq!(a_squared.grad(), 1.0);
+        assert_eq!(a.grad(), 6.0);
     }
 }
