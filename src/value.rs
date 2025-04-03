@@ -135,6 +135,15 @@ impl Div<Value> for Value {
     }
 }
 
+impl Div<Value> for f64 {
+    type Output = Value;
+
+    fn div(self, rhs: Value) -> Self::Output {
+        let self_value: Value = self.into();
+        self_value / rhs
+    }
+}
+
 #[derive(Debug)]
 enum BinaryOp {
     Sum,
@@ -266,7 +275,7 @@ mod tests {
     #[test]
     fn test_div() {
         let a = Value::new_param("a", 2.0);
-        let mut div = Value::new_param("b", 1.0) / a.clone();
+        let mut div = 1.0 / a.clone();
         div.backward();
         assert_eq!(div.as_f64(), 0.5);
         assert_eq!(a.grad(), -0.25);
