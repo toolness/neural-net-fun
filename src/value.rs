@@ -2,7 +2,7 @@ use std::{
     cell::RefCell,
     collections::HashSet,
     fmt::Display,
-    ops::{Add, Mul, Sub},
+    ops::{Add, Div, Mul, Sub},
     rc::Rc,
 };
 
@@ -124,6 +124,14 @@ impl Mul<Value> for Value {
             self.as_f64() * rhs.as_f64(),
         )
         .into()
+    }
+}
+
+impl Div<Value> for Value {
+    type Output = Value;
+
+    fn div(self, rhs: Value) -> Self::Output {
+        self.clone() * rhs.pow(-1.0)
     }
 }
 
@@ -253,6 +261,15 @@ mod tests {
         assert_eq!(d.grad(), -2.0);
         assert_eq!(f.grad(), 4.0);
         assert_eq!(loss.grad(), 1.0);
+    }
+
+    #[test]
+    fn test_div() {
+        let a = Value::new_param("a", 2.0);
+        let mut div = Value::new_param("b", 1.0) / a.clone();
+        div.backward();
+        assert_eq!(div.as_f64(), 0.5);
+        assert_eq!(a.grad(), -0.25);
     }
 
     #[test]
