@@ -139,8 +139,7 @@ impl Div<Value> for f64 {
     type Output = Value;
 
     fn div(self, rhs: Value) -> Self::Output {
-        let self_value: Value = self.into();
-        self_value / rhs
+        Value::from(self) / rhs
     }
 }
 
