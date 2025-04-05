@@ -187,3 +187,32 @@ impl Neuron {
         params
     }
 }
+
+#[derive(Clone, Debug)]
+struct Layer {
+    neurons: Vec<Neuron>,
+}
+
+impl Layer {
+    fn new(num_inputs: usize, activation: ActivationFn, num_outputs: usize) -> Self {
+        Layer {
+            neurons: (0..num_outputs)
+                .map(|_| Neuron::new(num_inputs, activation))
+                .collect(),
+        }
+    }
+
+    fn output(&self, inputs: &Vec<Value>) -> Vec<Value> {
+        self.neurons
+            .iter()
+            .map(|neuron| neuron.output(inputs))
+            .collect()
+    }
+
+    fn params(&self) -> Vec<Value> {
+        self.neurons
+            .iter()
+            .flat_map(|neuron| neuron.params())
+            .collect()
+    }
+}
