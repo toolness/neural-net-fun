@@ -28,7 +28,7 @@ impl Perceptron {
             weights: Vec3(weights.0, weights.1, weights.2),
             loss: 0.0,
         };
-        p.update();
+        p.create_nn_and_update_loss();
         p
     }
 
@@ -36,10 +36,15 @@ impl Perceptron {
         false
     }
 
-    pub fn update(&mut self) {
+    fn create_nn_and_update_loss(&mut self) -> NeuralNet {
         let nn = NeuralNet::new(&self.datapoints, &self.weights);
-        let learning_rate = 0.005;
         self.loss = nn.loss.as_f64();
+        nn
+    }
+
+    pub fn update(&mut self) {
+        let learning_rate = 0.005;
+        let nn = self.create_nn_and_update_loss();
         self.weights += learning_rate * -1.0 * nn.into_grad();
     }
 
@@ -103,11 +108,11 @@ impl NeuralNet {
             let sigmoid = Value::from(1.0) / (Value::from(1.0) + (sum * (-1.0).into()).exp());
             let y = Value::from(point.label as f64);
             let single_loss = (y - sigmoid.clone()).pow(2.0);
-            println!(
-                "{point:?}, sigmoid={:0.2} loss={:0.2}",
-                sigmoid.as_f64(),
-                single_loss.as_f64()
-            );
+            // println!(
+            //     "{point:?}, sigmoid={:0.2} loss={:0.2}",
+            //     sigmoid.as_f64(),
+            //     single_loss.as_f64()
+            // );
             loss = loss + single_loss;
         }
         loss = loss / Value::from(points.len() as f64);
@@ -119,10 +124,9 @@ impl NeuralNet {
         self.loss.backward();
         if self.w1.grad().is_finite() && self.w2.grad().is_finite() && self.w3.grad().is_finite() {
             let grad = Vec3(self.w1.grad(), self.w2.grad(), self.w3.grad());
-            println!("LOSS {} GRAD {:0.2?}", self.loss.as_f64(), grad);
             grad
         } else {
-            println!("LOSS INFINITE GRAD {}", self.loss.as_f64());
+            // TODO: Consider resetting any weight that isn't finite.
             Vec3::default()
         }
     }
