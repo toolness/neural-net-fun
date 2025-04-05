@@ -17,7 +17,7 @@ impl Datapoint {
 }
 
 #[derive(Clone, Debug)]
-pub struct Weights(Layer);
+pub struct Weights(MultiLayerPerceptron);
 
 fn rand_f64() -> f64 {
     (rand() as f64 / u32::MAX as f64) * 2.0 - 1.0
@@ -29,7 +29,7 @@ fn rand_value() -> Value {
 
 impl Weights {
     pub fn random() -> Self {
-        Self(Layer::new(2, sigmoid, 1))
+        Self(MultiLayerPerceptron::new(2, sigmoid, vec![1]))
     }
 
     fn get_label(&self, x: f64, y: f64) -> i32 {
