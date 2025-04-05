@@ -24,6 +24,10 @@ const AUTO_UPDATE_INCREMENT: i32 = 25;
 /// Empty space between left side of screen and text, in pixels.
 const LEFT_PADDING: f32 = 10.0;
 
+const MIN_LEARN_RATE: i32 = 1;
+
+const LEARN_FACTOR: f64 = 0.05;
+
 const HELP_TEXT: &'static str = r#"Help
 
 H - Toggle help
@@ -57,6 +61,7 @@ async fn main() {
     let mut show_help = false;
     let mut last_frame_time = get_time();
     let mut time_to_auto_update = MAX_AUTO_UPDATE_TIME as f64 / 1000.0;
+    let mut learning_rate = 1;
     let help_lines: Vec<&'static str> = HELP_TEXT.split('\n').collect();
 
     loop {
@@ -108,6 +113,12 @@ async fn main() {
             auto_update_time = std::cmp::max(auto_update_time - AUTO_UPDATE_INCREMENT, 0);
         }
 
+        if is_key_pressed(KeyCode::Comma) {
+            learning_rate = std::cmp::max(learning_rate - 1, MIN_LEARN_RATE);
+        } else if is_key_pressed(KeyCode::Period) {
+            learning_rate += 1;
+        }
+
         let should_update = if auto_update {
             time_to_auto_update -= delta_time;
             if time_to_auto_update <= 0.0 {
@@ -121,7 +132,7 @@ async fn main() {
         };
 
         if should_update {
-            perceptron.update();
+            perceptron.update(learning_rate as f64 * LEARN_FACTOR);
         }
 
         plot.draw_axes();
@@ -137,7 +148,7 @@ async fn main() {
         };
         draw_text(
             &format!(
-                "Loss: {:0.4?} {auto_label:4} {conv_label:11}",
+                "Loss: {:0.4?} Learning rate: {learning_rate} {auto_label:4} {conv_label:11}",
                 perceptron.loss()
             ),
             LEFT_PADDING,

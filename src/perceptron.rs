@@ -90,8 +90,7 @@ impl Perceptron {
         nn
     }
 
-    pub fn update(&mut self) {
-        let learning_rate = 0.05;
+    pub fn update(&mut self, learning_rate: f64) {
         let nn = self.create_nn_and_update_loss();
         let grad = nn.into_grad();
         self.weights = self.weights.learn(grad, learning_rate);
