@@ -46,8 +46,8 @@ async fn main() {
         Datapoint::new((3, 1), 1),
         Datapoint::new((2, -1), 1),
         Datapoint::new((-2, 1), 1),
-        Datapoint::new((-1, -3), -1),
-        //Datapoint::new((47, -23), -1),
+        Datapoint::new((-1, -3), 0),
+        //Datapoint::new((47, -23), 0),
     ];
     let mut perceptron = Perceptron::new(datapoints.clone(), Default::default());
 
@@ -72,7 +72,7 @@ async fn main() {
         let did_modify_datapoints = if is_key_down(KeyCode::Key1) {
             modify_datapoint(&mut datapoints, mouse, Some(1))
         } else if is_key_down(KeyCode::Key2) {
-            modify_datapoint(&mut datapoints, mouse, Some(-1))
+            modify_datapoint(&mut datapoints, mouse, Some(0))
         } else if is_key_down(KeyCode::X) {
             modify_datapoint(&mut datapoints, mouse, None)
         } else if is_key_pressed(KeyCode::C) {
