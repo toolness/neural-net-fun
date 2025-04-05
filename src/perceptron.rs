@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use crate::{plot::Plot, value::Value};
 
 use macroquad::{prelude::*, rand::rand};
@@ -43,6 +45,17 @@ impl Weights {
     }
 }
 
+impl Display for Weights {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let floats: Vec<String> = self
+            .0
+            .iter()
+            .map(|v| format!("{:.2}", v.as_f64()))
+            .collect();
+        write!(f, "({})", floats.join(", "))
+    }
+}
+
 pub struct Perceptron {
     datapoints: Vec<Datapoint>,
     weights: Weights,
@@ -75,6 +88,7 @@ impl Perceptron {
         let nn = self.create_nn_and_update_loss();
         let grad = nn.into_grad();
         self.weights = self.weights.learn(grad, learning_rate);
+        println!("new weights: {}", self.weights);
     }
 
     /// Return the weights.
