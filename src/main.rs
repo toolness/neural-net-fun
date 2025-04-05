@@ -1,7 +1,6 @@
 mod perceptron;
 mod plot;
 mod value;
-mod vec3;
 
 use value::Value;
 
