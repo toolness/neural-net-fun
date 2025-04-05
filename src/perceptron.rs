@@ -34,7 +34,7 @@ impl Perceptron {
 
     pub fn update(&mut self) {
         let nn = NeuralNet::new(&self.datapoints, &self.weights);
-        let learning_rate = 0.05;
+        let learning_rate = 0.005;
         self.weights += learning_rate * -1.0 * nn.into_grad();
     }
 
