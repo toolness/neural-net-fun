@@ -91,7 +91,7 @@ impl NeuralNet {
             let x2 = Value::from(point.pos.0 as f64);
             let x3 = Value::from(point.pos.1 as f64);
             let sum = x1 * w1.clone() + x2 * w2.clone() + x3 * w3.clone();
-            let sigmoid = sum.exp() / (Value::from(1.0) + sum.exp());
+            let sigmoid = Value::from(1.0) / (Value::from(1.0) + (sum * (-1.0).into()).exp());
             let y = Value::from(point.label as f64);
             let single_loss = (y - sigmoid.clone()).pow(2.0);
             println!(
