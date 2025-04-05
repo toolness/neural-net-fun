@@ -17,7 +17,7 @@ impl Datapoint {
 }
 
 #[derive(Clone, Debug)]
-pub struct Weights(Neuron);
+pub struct Weights(Layer);
 
 fn rand_f64() -> f64 {
     (rand() as f64 / u32::MAX as f64) * 2.0 - 1.0
@@ -29,12 +29,12 @@ fn rand_value() -> Value {
 
 impl Weights {
     pub fn random() -> Self {
-        Self(Neuron::new(2, sigmoid))
+        Self(Layer::new(2, sigmoid, 1))
     }
 
     fn get_label(&self, x: f64, y: f64) -> i32 {
         let inputs = vec![Value::from(x), Value::from(y)];
-        let output = self.0.output(&inputs).as_f64();
+        let output = self.0.output(&inputs).first().unwrap().as_f64();
         if output <= 0.5 { 0 } else { 1 }
     }
 
@@ -45,7 +45,7 @@ impl Weights {
                 Value::from(point.pos.0 as f64),
                 Value::from(point.pos.1 as f64),
             ];
-            let output = self.0.output(&inputs);
+            let output = self.0.output(&inputs).pop().unwrap();
             let y = Value::from(point.label as f64);
             let single_loss = (y - output.clone()).pow(2.0);
             // println!(
