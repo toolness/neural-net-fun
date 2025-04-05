@@ -52,8 +52,8 @@ async fn main() {
     let mut perceptron = Perceptron::new(datapoints.clone(), Weights::random());
 
     let plot = Plot::new(PLOT_SCALE);
-    let mut auto_update_time = 0; //MAX_AUTO_UPDATE_TIME;
-    let mut auto_update = false;
+    let mut auto_update_time = 0;
+    let mut auto_update = true;
     let mut show_help = false;
     let mut last_frame_time = get_time();
     let mut time_to_auto_update = MAX_AUTO_UPDATE_TIME as f64 / 1000.0;
