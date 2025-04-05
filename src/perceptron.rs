@@ -31,11 +31,11 @@ impl Weights {
         Self(weights)
     }
 
-    fn learn(self, grad: Vec<f64>, learning_rate: f64) -> Self {
+    fn learn(&self, grad: Vec<f64>, learning_rate: f64) -> Self {
         assert_eq!(self.0.len(), grad.len());
         Weights(
             self.0
-                .into_iter()
+                .iter()
                 .zip(grad)
                 .map(|(value, grad)| Value::from(value.as_f64() + -1.0 * learning_rate * grad))
                 .collect(),
@@ -74,7 +74,7 @@ impl Perceptron {
         let learning_rate = 0.005;
         let nn = self.create_nn_and_update_loss();
         let grad = nn.into_grad();
-        self.weights = self.weights.clone().learn(grad, learning_rate);
+        self.weights = self.weights.learn(grad, learning_rate);
     }
 
     /// Return the weights.
