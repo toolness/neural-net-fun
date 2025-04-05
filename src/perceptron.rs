@@ -32,6 +32,7 @@ impl Weights {
     }
 
     fn learn(self, grad: Vec<f64>, learning_rate: f64) -> Self {
+        assert_eq!(self.0.len(), grad.len());
         Weights(
             self.0
                 .into_iter()
