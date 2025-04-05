@@ -47,7 +47,7 @@ async fn main() {
         Datapoint::new((2, -1), 1),
         Datapoint::new((-2, 1), 1),
         Datapoint::new((-1, -3), 0),
-        //Datapoint::new((47, -23), 0),
+        Datapoint::new((47, -23), 0),
     ];
     let mut perceptron = Perceptron::new(datapoints.clone(), Weights::random());
 
