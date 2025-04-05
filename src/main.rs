@@ -137,8 +137,8 @@ async fn main() {
         };
         draw_text(
             &format!(
-                "Weights: {:3?} {auto_label:4} {conv_label:11}",
-                perceptron.weights()
+                "Loss: {:0.4?} {auto_label:4} {conv_label:11}",
+                perceptron.loss()
             ),
             LEFT_PADDING,
             screen_height() - 30.0,

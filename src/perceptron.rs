@@ -18,14 +18,18 @@ impl Datapoint {
 pub struct Perceptron {
     datapoints: Vec<Datapoint>,
     weights: Vec3,
+    loss: f64,
 }
 
 impl Perceptron {
     pub fn new(datapoints: Vec<Datapoint>, weights: (f64, f64, f64)) -> Self {
-        Perceptron {
+        let mut p = Perceptron {
             datapoints,
             weights: Vec3(weights.0, weights.1, weights.2),
-        }
+            loss: 0.0,
+        };
+        p.update();
+        p
     }
 
     pub fn has_converged(&self) -> bool {
@@ -35,12 +39,17 @@ impl Perceptron {
     pub fn update(&mut self) {
         let nn = NeuralNet::new(&self.datapoints, &self.weights);
         let learning_rate = 0.005;
+        self.loss = nn.loss.as_f64();
         self.weights += learning_rate * -1.0 * nn.into_grad();
     }
 
     /// Return the weights.
     pub fn weights(&self) -> (f64, f64, f64) {
         (self.weights.0, self.weights.1, self.weights.2)
+    }
+
+    pub fn loss(&self) -> f64 {
+        self.loss
     }
 
     pub fn draw(&self, plot: &Plot) {
