@@ -29,7 +29,7 @@ fn rand_value() -> Value {
 
 impl Weights {
     pub fn random() -> Self {
-        Self(MultiLayerPerceptron::new(2, sigmoid, vec![1]))
+        Self(MultiLayerPerceptron::new(2, sigmoid, vec![4, 1]))
     }
 
     fn get_label(&self, x: f64, y: f64) -> i32 {
@@ -114,7 +114,7 @@ impl Perceptron {
     pub fn update(&mut self, learning_rate: f64) {
         self.loss = self.weights.calculate_loss(&self.datapoints, true).as_f64();
         self.weights.learn(learning_rate);
-        println!("new weights: {}", self.weights);
+        //println!("new weights: {}", self.weights);
     }
 
     /// Return the weights.
