@@ -216,3 +216,36 @@ impl Layer {
             .collect()
     }
 }
+
+#[derive(Clone, Debug)]
+struct MultiLayerPerceptron {
+    layers: Vec<Layer>,
+}
+
+impl MultiLayerPerceptron {
+    fn new(num_inputs: usize, activation: ActivationFn, num_layer_outputs: Vec<usize>) -> Self {
+        let mut layers = vec![];
+        let mut next_num_inputs = num_inputs;
+        for num_outputs in num_layer_outputs {
+            layers.push(Layer::new(next_num_inputs, activation, num_outputs));
+            next_num_inputs = num_outputs;
+        }
+        Self { layers }
+    }
+
+    fn output(&self, inputs: &Vec<Value>) -> Vec<Value> {
+        let mut next_inputs = inputs.clone();
+        for layer in &self.layers {
+            let layer_outputs = layer.output(&next_inputs);
+            next_inputs = layer_outputs;
+        }
+        next_inputs
+    }
+
+    fn params(&self) -> Vec<Value> {
+        self.layers
+            .iter()
+            .flat_map(|layer| layer.params())
+            .collect()
+    }
+}
