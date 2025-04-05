@@ -34,6 +34,8 @@ SPACE - Update perceptron
 A - Toggle auto-update mode
 [ - Decrease auto-update speed
 ] - Increase auto-update speed
+, - Decrease learning rate
+. - Increase learning rate
 1 - Paint green datapoint (at mouse cursor)
 2 - Paint purple datapoint (at mouse cursor)
 X - Delete datapoint (at mouse cursor)
