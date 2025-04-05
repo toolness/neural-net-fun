@@ -20,7 +20,7 @@ impl Datapoint {
 pub struct Weights(Vec<Value>);
 
 fn rand_f64() -> f64 {
-    rand() as f64 / u32::MAX as f64
+    (rand() as f64 / u32::MAX as f64) * 2.0 - 1.0
 }
 
 fn rand_value() -> Value {
