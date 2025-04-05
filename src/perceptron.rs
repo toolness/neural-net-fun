@@ -17,7 +17,7 @@ impl Datapoint {
 }
 
 #[derive(Clone, Debug)]
-pub struct Weights(Vec<Value>);
+pub struct Weights(Neuron);
 
 fn rand_f64() -> f64 {
     (rand() as f64 / u32::MAX as f64) * 2.0 - 1.0
@@ -29,26 +29,53 @@ fn rand_value() -> Value {
 
 impl Weights {
     pub fn random() -> Self {
-        let weights = vec![rand_value(), rand_value(), rand_value()];
-        Self(weights)
+        Self(Neuron::new(2, sigmoid))
     }
 
-    fn learn(&self, grad: Vec<f64>, learning_rate: f64) -> Self {
-        assert_eq!(self.0.len(), grad.len());
-        Weights(
-            self.0
-                .iter()
-                .zip(grad)
-                .map(|(value, grad)| {
-                    let mut new_f64 = value.as_f64() + -1.0 * learning_rate * grad;
-                    // Reset any infinite weights.
-                    if !new_f64.is_finite() {
-                        new_f64 = rand_f64();
-                    }
-                    Value::from(new_f64)
-                })
-                .collect(),
-        )
+    fn get_label(&self, x: f64, y: f64) -> i32 {
+        let inputs = vec![Value::from(x), Value::from(y)];
+        let output = self.0.output(&inputs).as_f64();
+        if output <= 0.5 { 0 } else { 1 }
+    }
+
+    fn calculate_loss(&self, points: &Vec<Datapoint>, calc_grad: bool) -> Value {
+        let mut loss = Value::from(0.0);
+        for point in points {
+            let inputs = vec![
+                Value::from(point.pos.0 as f64),
+                Value::from(point.pos.1 as f64),
+            ];
+            let output = self.0.output(&inputs);
+            let y = Value::from(point.label as f64);
+            let single_loss = (y - output.clone()).pow(2.0);
+            // println!(
+            //     "{point:?}, sigmoid={:0.2} loss={:0.2}",
+            //     sigmoid.as_f64(),
+            //     single_loss.as_f64()
+            // );
+            loss = loss + single_loss;
+        }
+        loss = loss / Value::from(points.len() as f64);
+
+        if calc_grad {
+            for param in self.0.params().iter_mut() {
+                param.zero_grad();
+            }
+            loss.backward();
+        }
+
+        loss
+    }
+
+    fn learn(&self, learning_rate: f64) {
+        for mut value in self.0.params() {
+            let mut new_f64 = value.as_f64() + -1.0 * learning_rate * value.grad();
+            // Reset any infinite weights.
+            if !new_f64.is_finite() {
+                new_f64 = rand_f64();
+            }
+            value.set(new_f64);
+        }
     }
 }
 
@@ -56,6 +83,7 @@ impl Display for Weights {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let floats: Vec<String> = self
             .0
+            .params()
             .iter()
             .map(|v| format!("{:.2}", v.as_f64()))
             .collect();
@@ -71,29 +99,21 @@ pub struct Perceptron {
 
 impl Perceptron {
     pub fn new(datapoints: Vec<Datapoint>, weights: Weights) -> Self {
-        let mut p = Perceptron {
+        let loss = weights.calculate_loss(&datapoints, false).as_f64();
+        Perceptron {
             datapoints,
             weights,
-            loss: 0.0,
-        };
-        p.create_nn_and_update_loss();
-        p
+            loss,
+        }
     }
 
     pub fn has_converged(&self) -> bool {
         false
     }
 
-    fn create_nn_and_update_loss(&mut self) -> NeuralNet {
-        let nn = NeuralNet::new(&self.datapoints, &self.weights);
-        self.loss = nn.loss.as_f64();
-        nn
-    }
-
     pub fn update(&mut self, learning_rate: f64) {
-        let nn = self.create_nn_and_update_loss();
-        let grad = nn.into_grad();
-        self.weights = self.weights.learn(grad, learning_rate);
+        self.loss = self.weights.calculate_loss(&self.datapoints, true).as_f64();
+        self.weights.learn(learning_rate);
         println!("new weights: {}", self.weights);
     }
 
@@ -109,7 +129,7 @@ impl Perceptron {
     pub fn draw(&self, plot: &Plot) {
         for y in -50..50 {
             for x in -50..50 {
-                let label = NeuralNet::get_label(x as f64, y as f64, &self.weights);
+                let label = self.weights.get_label(x as f64, y as f64);
                 plot.draw_point(
                     x as f32,
                     y as f32,
@@ -136,59 +156,34 @@ fn sigmoid(value: Value) -> Value {
     Value::from(1.0) / (Value::from(1.0) + (value * (-1.0).into()).exp())
 }
 
-fn neuron(weights: &Vec<Value>, inputs: &Vec<Value>, activation: ActivationFn) -> Value {
-    // The weights will have one extra for the bias.
-    assert_eq!(weights.len(), inputs.len() + 1);
-    let mut sum = weights.last().unwrap().clone();
-    for (weight, input) in weights.iter().zip(inputs) {
-        sum = sum + weight.clone() * input.clone();
-    }
-    activation(sum)
-}
-
-struct NeuralNet {
-    loss: Value,
+#[derive(Clone, Debug)]
+struct Neuron {
     weights: Vec<Value>,
+    bias: Value,
+    activation: ActivationFn,
 }
 
-impl NeuralNet {
-    fn get_label(x: f64, y: f64, w: &Weights) -> i32 {
-        let inputs = vec![Value::from(x), Value::from(y)];
-        let output = neuron(&w.0, &inputs, sigmoid).as_f64();
-        if output <= 0.5 { 0 } else { 1 }
+impl Neuron {
+    fn new(num_inputs: usize, activation: ActivationFn) -> Self {
+        Neuron {
+            weights: (0..num_inputs).map(|_| rand_value()).collect(),
+            bias: rand_value(),
+            activation,
+        }
     }
 
-    fn new(points: &Vec<Datapoint>, w: &Weights) -> Self {
-        let weights = w.0.clone();
-        let mut loss = Value::from(0.0);
-        for point in points {
-            let inputs = vec![
-                Value::from(point.pos.0 as f64),
-                Value::from(point.pos.1 as f64),
-            ];
-            let output = neuron(&weights, &inputs, sigmoid);
-            let y = Value::from(point.label as f64);
-            let single_loss = (y - output.clone()).pow(2.0);
-            // println!(
-            //     "{point:?}, sigmoid={:0.2} loss={:0.2}",
-            //     sigmoid.as_f64(),
-            //     single_loss.as_f64()
-            // );
-            loss = loss + single_loss;
+    fn output(&self, inputs: &Vec<Value>) -> Value {
+        assert_eq!(self.weights.len(), inputs.len());
+        let mut sum = self.bias.clone();
+        for (weight, input) in self.weights.iter().zip(inputs) {
+            sum = sum + weight.clone() * input.clone();
         }
-        loss = loss / Value::from(points.len() as f64);
-
-        NeuralNet { loss, weights }
+        (self.activation)(sum)
     }
 
-    fn into_grad(mut self) -> Vec<f64> {
-        for weight in self.weights.iter_mut() {
-            weight.zero_grad();
-        }
-        self.loss.backward();
-        self.weights
-            .into_iter()
-            .map(|weight| weight.grad())
-            .collect()
+    fn params(&self) -> Vec<Value> {
+        let mut params = self.weights.clone();
+        params.push(self.bias.clone());
+        params
     }
 }

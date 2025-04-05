@@ -65,6 +65,10 @@ impl Value {
         }
     }
 
+    pub fn set(&mut self, value: f64) {
+        self.0.borrow_mut().value = value;
+    }
+
     pub fn zero_grad(&mut self) {
         self.0.borrow_mut().grad = 0.0;
     }
