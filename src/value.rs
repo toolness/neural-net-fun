@@ -65,6 +65,10 @@ impl Value {
         }
     }
 
+    pub fn zero_grad(&mut self) {
+        self.0.borrow_mut().grad = 0.0;
+    }
+
     fn local_backward(&mut self) {
         let value = &self.0.borrow();
         match &value._type {

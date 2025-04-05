@@ -39,7 +39,14 @@ impl Weights {
             self.0
                 .iter()
                 .zip(grad)
-                .map(|(value, grad)| Value::from(value.as_f64() + -1.0 * learning_rate * grad))
+                .map(|(value, grad)| {
+                    let mut new_f64 = value.as_f64() + -1.0 * learning_rate * grad;
+                    // Reset any infinite weights.
+                    if !new_f64.is_finite() {
+                        new_f64 = rand_f64();
+                    }
+                    Value::from(new_f64)
+                })
                 .collect(),
         )
     }
@@ -176,6 +183,9 @@ impl NeuralNet {
     }
 
     fn into_grad(mut self) -> Vec<f64> {
+        for weight in self.weights.iter_mut() {
+            weight.zero_grad();
+        }
         self.loss.backward();
         self.weights
             .into_iter()
