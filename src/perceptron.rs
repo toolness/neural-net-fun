@@ -110,7 +110,7 @@ impl NeuralNet {
         self.loss.backward();
         if self.w1.grad().is_finite() && self.w2.grad().is_finite() && self.w3.grad().is_finite() {
             let grad = Vec3(self.w1.grad(), self.w2.grad(), self.w3.grad());
-            println!("LOSS {} GRAD {:?}", self.loss.as_f64(), grad);
+            println!("LOSS {} GRAD {:0.2?}", self.loss.as_f64(), grad);
             grad
         } else {
             println!("LOSS INFINITE GRAD {}", self.loss.as_f64());
