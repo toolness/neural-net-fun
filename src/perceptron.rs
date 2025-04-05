@@ -1,7 +1,6 @@
 use crate::{plot::Plot, value::Value};
 
-use super::vec3::Vec3;
-use macroquad::prelude::*;
+use macroquad::{prelude::*, rand::rand};
 
 #[derive(Clone, Copy, Debug)]
 pub struct Datapoint {
@@ -15,17 +14,45 @@ impl Datapoint {
     }
 }
 
+#[derive(Clone, Debug)]
+pub struct Weights(Vec<Value>);
+
+fn rand_f64() -> f64 {
+    rand() as f64 / u32::MAX as f64
+}
+
+fn rand_value() -> Value {
+    Value::from(rand_f64())
+}
+
+impl Weights {
+    pub fn random() -> Self {
+        let weights = vec![rand_value(), rand_value(), rand_value()];
+        Self(weights)
+    }
+
+    fn learn(self, grad: Vec<f64>, learning_rate: f64) -> Self {
+        Weights(
+            self.0
+                .into_iter()
+                .zip(grad)
+                .map(|(value, grad)| Value::from(value.as_f64() + -1.0 * learning_rate * grad))
+                .collect(),
+        )
+    }
+}
+
 pub struct Perceptron {
     datapoints: Vec<Datapoint>,
-    weights: Vec3,
+    weights: Weights,
     loss: f64,
 }
 
 impl Perceptron {
-    pub fn new(datapoints: Vec<Datapoint>, weights: (f64, f64, f64)) -> Self {
+    pub fn new(datapoints: Vec<Datapoint>, weights: Weights) -> Self {
         let mut p = Perceptron {
             datapoints,
-            weights: Vec3(weights.0, weights.1, weights.2),
+            weights,
             loss: 0.0,
         };
         p.create_nn_and_update_loss();
@@ -45,12 +72,13 @@ impl Perceptron {
     pub fn update(&mut self) {
         let learning_rate = 0.005;
         let nn = self.create_nn_and_update_loss();
-        self.weights += learning_rate * -1.0 * nn.into_grad();
+        let grad = nn.into_grad();
+        self.weights = self.weights.clone().learn(grad, learning_rate);
     }
 
     /// Return the weights.
-    pub fn weights(&self) -> (f64, f64, f64) {
-        (self.weights.0, self.weights.1, self.weights.2)
+    pub fn weights(&self) -> Weights {
+        self.weights.clone()
     }
 
     pub fn loss(&self) -> f64 {
@@ -103,14 +131,14 @@ struct NeuralNet {
 }
 
 impl NeuralNet {
-    fn get_label(x: f64, y: f64, w: &Vec3) -> i32 {
-        let sum = x * w.0 + y * w.1 + w.2;
-        let sigmoid = sum.exp() / (1.0 + sum.exp());
-        if sigmoid <= 0.5 { 0 } else { 1 }
+    fn get_label(x: f64, y: f64, w: &Weights) -> i32 {
+        let inputs = vec![Value::from(x), Value::from(y)];
+        let output = neuron(&w.0, &inputs, sigmoid).as_f64();
+        if output <= 0.5 { 0 } else { 1 }
     }
 
-    fn new(points: &Vec<Datapoint>, w: &Vec3) -> Self {
-        let weights = vec![Value::from(w.0), Value::from(w.1), Value::from(w.2)];
+    fn new(points: &Vec<Datapoint>, w: &Weights) -> Self {
+        let weights = w.0.clone();
         let mut loss = Value::from(0.0);
         for point in points {
             let inputs = vec![
@@ -132,18 +160,11 @@ impl NeuralNet {
         NeuralNet { loss, weights }
     }
 
-    fn into_grad(mut self) -> Vec3 {
+    fn into_grad(mut self) -> Vec<f64> {
         self.loss.backward();
-
-        let w3 = self.weights.pop().unwrap();
-        let w2 = self.weights.pop().unwrap();
-        let w1 = self.weights.pop().unwrap();
-        if w1.grad().is_finite() && w2.grad().is_finite() && w3.grad().is_finite() {
-            let grad = Vec3(w1.grad(), w2.grad(), w3.grad());
-            grad
-        } else {
-            // TODO: Consider resetting any weight that isn't finite.
-            Vec3::default()
-        }
+        self.weights
+            .into_iter()
+            .map(|weight| weight.grad())
+            .collect()
     }
 }

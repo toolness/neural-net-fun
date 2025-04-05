@@ -7,7 +7,7 @@ use value::Value;
 
 use macroquad::prelude::*;
 
-use perceptron::{Datapoint, Perceptron};
+use perceptron::{Datapoint, Perceptron, Weights};
 use plot::Plot;
 
 /// Each point on the plot is scaled by this many screen pixels.
@@ -35,7 +35,7 @@ A - Toggle auto-update mode
 2 - Paint purple datapoint (at mouse cursor)
 X - Delete datapoint (at mouse cursor)
 C - Clear all datapoints
-W - Reset weights to zero
+W - Reset weights
 "#;
 
 #[macroquad::main("Perceptron Fun")]
@@ -49,7 +49,7 @@ async fn main() {
         Datapoint::new((-1, -3), 0),
         //Datapoint::new((47, -23), 0),
     ];
-    let mut perceptron = Perceptron::new(datapoints.clone(), Default::default());
+    let mut perceptron = Perceptron::new(datapoints.clone(), Weights::random());
 
     let plot = Plot::new(PLOT_SCALE);
     let mut auto_update_time = 0; //MAX_AUTO_UPDATE_TIME;
@@ -85,7 +85,7 @@ async fn main() {
         if did_modify_datapoints {
             perceptron = Perceptron::new(datapoints.clone(), perceptron.weights());
         } else if is_key_pressed(KeyCode::W) {
-            perceptron = Perceptron::new(datapoints.clone(), Default::default());
+            perceptron = Perceptron::new(datapoints.clone(), Weights::random());
         }
 
         if is_key_pressed(KeyCode::H) {
