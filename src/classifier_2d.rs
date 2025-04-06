@@ -102,8 +102,13 @@ impl Weights2D {
         ))
     }
 
-    fn calculate_loss(&self, points: &Vec<Datapoint2D>, calc_grad: bool) -> Value {
+    fn calculate_loss_and_accuracy(
+        &self,
+        points: &Vec<Datapoint2D>,
+        calc_grad: bool,
+    ) -> (f64, f64) {
         let mut loss = Value::from(0.0);
+        let mut correctly_classified = 0;
         for point in points {
             let inputs = vec![
                 Value::from(point.pos.0 as f64 / POINT_SCALE),
@@ -111,6 +116,10 @@ impl Weights2D {
             ];
             let output = self.0.output(&inputs).pop().unwrap();
             let y = Value::from(point.label.as_f64());
+            let predicted_label: Label2D = output.as_f64().into();
+            if predicted_label == point.label {
+                correctly_classified += 1;
+            }
             let single_loss = (y - output.clone()).pow(2.0);
             // println!(
             //     "{point:?}, sigmoid={:0.2} loss={:0.2}",
@@ -120,6 +129,7 @@ impl Weights2D {
             loss = loss + single_loss;
         }
         loss = loss / Value::from(points.len() as f64);
+        let accuracy = correctly_classified as f64 / points.len() as f64;
 
         if calc_grad {
             for param in self.0.params().iter_mut() {
@@ -128,7 +138,7 @@ impl Weights2D {
             loss.backward();
         }
 
-        loss
+        (loss.as_f64(), accuracy)
     }
 
     fn learn(&self, learning_rate: f64) {
@@ -159,15 +169,17 @@ pub struct Classifier2D {
     datapoints: Vec<Datapoint2D>,
     weights: Weights2D,
     loss: f64,
+    accuracy: f64,
 }
 
 impl Classifier2D {
     pub fn new(datapoints: Vec<Datapoint2D>, weights: Weights2D) -> Self {
-        let loss = weights.calculate_loss(&datapoints, false).as_f64();
+        let (loss, accuracy) = weights.calculate_loss_and_accuracy(&datapoints, false);
         Classifier2D {
             datapoints,
             weights,
             loss,
+            accuracy,
         }
     }
 
@@ -176,7 +188,9 @@ impl Classifier2D {
     }
 
     pub fn update(&mut self, learning_rate: f64) {
-        self.loss = self.weights.calculate_loss(&self.datapoints, true).as_f64();
+        (self.loss, self.accuracy) = self
+            .weights
+            .calculate_loss_and_accuracy(&self.datapoints, true);
         self.weights.learn(learning_rate);
         //println!("new weights: {}", self.weights);
     }
@@ -188,6 +202,10 @@ impl Classifier2D {
 
     pub fn loss(&self) -> f64 {
         self.loss
+    }
+
+    pub fn accuracy(&self) -> f64 {
+        self.accuracy
     }
 
     pub fn draw(&self, plot: &Plot, enable_shading: bool) {

@@ -136,8 +136,9 @@ async fn main() {
         };
         draw_text(
             &format!(
-                "Loss: {:0.4?} Learn rate: {:0.3} Speed: {updates_per_frame} Layers: {num_hidden_layers} {conv_label:11}",
+                "Loss: {:0.4?} Acc: {}% LR: {:0.3} Spd: {updates_per_frame} Layers: {num_hidden_layers} {conv_label:11}",
                 perceptron.loss(),
+                (perceptron.accuracy() * 100.0).floor(),
                 learning_rate,
             ),
             LEFT_PADDING,
