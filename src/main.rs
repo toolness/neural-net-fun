@@ -128,7 +128,7 @@ async fn main() {
         perceptron.draw(&plot, enable_shading);
 
         let conv_label = if perceptron.has_converged() {
-            "CONVERGENCE"
+            "CONV"
         } else {
             ""
         };
