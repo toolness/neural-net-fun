@@ -1,6 +1,6 @@
 use std::{
     fmt::Display,
-    ops::{Add, Mul},
+    ops::{Add, Div, Mul},
 };
 
 use crate::{plot::Plot, value::Value};
@@ -151,16 +151,26 @@ impl Perceptron {
 
 type ActivationFn<V> = fn(value: V) -> V;
 
-fn sigmoid(value: Value) -> Value {
-    Value::from(1.0) / (Value::from(1.0) + (value * (-1.0).into()).exp())
+fn sigmoid<V: Val>(value: V) -> V {
+    V::from(1.0) / (V::from(1.0) + (value * (-1.0).into()).exp())
 }
 
 trait Val:
-    Clone + std::fmt::Debug + From<f64> + Mul<Self, Output = Self> + Add<Self, Output = Self>
+    Clone
+    + std::fmt::Debug
+    + From<f64>
+    + Mul<Self, Output = Self>
+    + Add<Self, Output = Self>
+    + Div<Self, Output = Self>
 {
+    fn exp(&self) -> Self;
 }
 
-impl Val for Value {}
+impl Val for Value {
+    fn exp(&self) -> Value {
+        self.exp()
+    }
+}
 
 #[derive(Clone, Debug)]
 struct Neuron<V: Val> {
