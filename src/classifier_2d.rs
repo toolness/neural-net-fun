@@ -101,56 +101,6 @@ impl Weights2D {
             hidden_layers,
         ))
     }
-
-    fn calculate_loss_and_accuracy(
-        &self,
-        points: &Vec<Datapoint2D>,
-        calc_grad: bool,
-    ) -> (f64, f64) {
-        let mut loss = Value::from(0.0);
-        let mut correctly_classified = 0;
-        for point in points {
-            let inputs = vec![
-                Value::from(point.pos.0 as f64 / POINT_SCALE),
-                Value::from(point.pos.1 as f64 / POINT_SCALE),
-            ];
-            let output = self.0.output(&inputs).pop().unwrap();
-            let y = Value::from(point.label.as_f64());
-            let predicted_label: Label2D = output.as_f64().into();
-            if predicted_label == point.label {
-                correctly_classified += 1;
-            }
-            let single_loss = (y - output.clone()).pow(2.0);
-            // println!(
-            //     "{point:?}, sigmoid={:0.2} loss={:0.2}",
-            //     sigmoid.as_f64(),
-            //     single_loss.as_f64()
-            // );
-            loss = loss + single_loss;
-        }
-        loss = loss / Value::from(points.len() as f64);
-        let accuracy = correctly_classified as f64 / points.len() as f64;
-
-        if calc_grad {
-            for param in self.0.params().iter_mut() {
-                param.zero_grad();
-            }
-            loss.backward();
-        }
-
-        (loss.as_f64(), accuracy)
-    }
-
-    fn learn(&self, learning_rate: f64) {
-        for mut value in self.0.params() {
-            let mut new_f64 = value.as_f64() + -1.0 * learning_rate * value.grad();
-            // Reset any infinite weights.
-            if !new_f64.is_finite() {
-                new_f64 = rand_f64();
-            }
-            value.set(new_f64);
-        }
-    }
 }
 
 impl Display for Weights2D {
@@ -174,13 +124,14 @@ pub struct Classifier2D {
 
 impl Classifier2D {
     pub fn new(datapoints: Vec<Datapoint2D>, weights: Weights2D) -> Self {
-        let (loss, accuracy) = weights.calculate_loss_and_accuracy(&datapoints, false);
-        Classifier2D {
+        let mut classifier = Classifier2D {
             datapoints,
             weights,
-            loss,
-            accuracy,
-        }
+            loss: 0.0,
+            accuracy: 0.0,
+        };
+        classifier.calculate_loss_and_accuracy(false);
+        classifier
     }
 
     pub fn has_converged(&self) -> bool {
@@ -188,10 +139,8 @@ impl Classifier2D {
     }
 
     pub fn update(&mut self, learning_rate: f64) {
-        (self.loss, self.accuracy) = self
-            .weights
-            .calculate_loss_and_accuracy(&self.datapoints, true);
-        self.weights.learn(learning_rate);
+        self.calculate_loss_and_accuracy(true);
+        self.learn(learning_rate);
         //println!("new weights: {}", self.weights);
     }
 
@@ -237,6 +186,51 @@ impl Classifier2D {
                 0.5,
                 point.label.color(),
             );
+        }
+    }
+
+    fn calculate_loss_and_accuracy(&mut self, calc_grad: bool) {
+        let mut loss = Value::from(0.0);
+        let mut correctly_classified = 0;
+        for point in &self.datapoints {
+            let inputs = vec![
+                Value::from(point.pos.0 as f64 / POINT_SCALE),
+                Value::from(point.pos.1 as f64 / POINT_SCALE),
+            ];
+            let output = self.weights.0.output(&inputs).pop().unwrap();
+            let y = Value::from(point.label.as_f64());
+            let predicted_label: Label2D = output.as_f64().into();
+            if predicted_label == point.label {
+                correctly_classified += 1;
+            }
+            let single_loss = (y - output.clone()).pow(2.0);
+            // println!(
+            //     "{point:?}, sigmoid={:0.2} loss={:0.2}",
+            //     sigmoid.as_f64(),
+            //     single_loss.as_f64()
+            // );
+            loss = loss + single_loss;
+        }
+        loss = loss / Value::from(self.datapoints.len() as f64);
+        self.loss = loss.as_f64();
+        self.accuracy = correctly_classified as f64 / self.datapoints.len() as f64;
+
+        if calc_grad {
+            for param in self.weights.0.params().iter_mut() {
+                param.zero_grad();
+            }
+            loss.backward();
+        }
+    }
+
+    fn learn(&self, learning_rate: f64) {
+        for mut value in self.weights.0.params() {
+            let mut new_f64 = value.as_f64() + -1.0 * learning_rate * value.grad();
+            // Reset any infinite weights.
+            if !new_f64.is_finite() {
+                new_f64 = rand_f64();
+            }
+            value.set(new_f64);
         }
     }
 }
