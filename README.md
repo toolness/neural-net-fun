@@ -6,6 +6,8 @@ Its core engine is inspired by Andrej Karpathy's
 my understanding of the concepts he taught in
 his [lecture](https://www.youtube.com/watch?v=VMj-3S1tku0).
 
+You can access the web version at [toolness.github.io/neural-net-fun/](https://toolness.github.io/neural-net-fun/).
+
 [micrograd]: https://github.com/karpathy/micrograd
 
 ## Quick start
