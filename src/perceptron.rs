@@ -28,13 +28,11 @@ fn rand_f64() -> f64 {
 
 impl Weights {
     pub fn random() -> Self {
-        Self(MultiLayerPerceptron::new(2, sigmoid, vec![4, 1]))
-    }
-
-    fn get_label(&self, x: f64, y: f64) -> i32 {
-        let inputs = vec![Value::from(x), Value::from(y)];
-        let output = self.0.output(&inputs).first().unwrap().as_f64();
-        if output <= 0.5 { 0 } else { 1 }
+        Self(MultiLayerPerceptron::new(
+            2,
+            ActivationType::Sigmoid,
+            vec![4, 1],
+        ))
     }
 
     fn calculate_loss(&self, points: &Vec<Datapoint>, calc_grad: bool) -> Value {
@@ -126,9 +124,14 @@ impl Perceptron {
     }
 
     pub fn draw(&self, plot: &Plot) {
+        let mlp = self.weights.0.read_only();
+
         for y in -50..50 {
             for x in -50..50 {
-                let label = self.weights.get_label(x as f64, y as f64);
+                let inputs = vec![x as f64, y as f64];
+                let output = *mlp.output(&inputs).first().unwrap();
+                let label = if output <= 0.5 { 0 } else { 1 };
+
                 plot.draw_point(
                     x as f32,
                     y as f32,
@@ -149,12 +152,6 @@ impl Perceptron {
     }
 }
 
-type ActivationFn<V> = fn(value: V) -> V;
-
-fn sigmoid<V: NeuronValue>(value: V) -> V {
-    V::from(1.0) / (V::from(1.0) + (value * (-1.0).into()).exp())
-}
-
 trait NeuronValue:
     Clone
     + std::fmt::Debug
@@ -164,11 +161,42 @@ trait NeuronValue:
     + Div<Self, Output = Self>
 {
     fn exp(&self) -> Self;
+
+    fn as_f64(&self) -> f64;
 }
 
 impl NeuronValue for Value {
     fn exp(&self) -> Value {
         self.exp()
+    }
+
+    fn as_f64(&self) -> f64 {
+        self.as_f64()
+    }
+}
+
+impl NeuronValue for f64 {
+    fn exp(&self) -> f64 {
+        f64::exp(*self)
+    }
+
+    fn as_f64(&self) -> f64 {
+        *self
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+pub enum ActivationType {
+    Sigmoid,
+}
+
+impl ActivationType {
+    fn activate<V: NeuronValue>(&self, value: V) -> V {
+        match self {
+            ActivationType::Sigmoid => {
+                V::from(1.0) / (V::from(1.0) + (value * (-1.0).into()).exp())
+            }
+        }
     }
 }
 
@@ -176,15 +204,23 @@ impl NeuronValue for Value {
 struct Neuron<V: NeuronValue> {
     weights: Vec<V>,
     bias: V,
-    activation: ActivationFn<V>,
+    activation: ActivationType,
 }
 
 impl<V: NeuronValue> Neuron<V> {
-    fn new(num_inputs: usize, activation: ActivationFn<V>) -> Self {
+    fn new(num_inputs: usize, activation: ActivationType) -> Self {
         Neuron {
             weights: (0..num_inputs).map(|_| rand_f64().into()).collect(),
             bias: rand_f64().into(),
             activation,
+        }
+    }
+
+    fn read_only(&self) -> Neuron<f64> {
+        Neuron {
+            weights: self.weights.iter().map(|weight| weight.as_f64()).collect(),
+            bias: self.bias.as_f64(),
+            activation: self.activation,
         }
     }
 
@@ -194,7 +230,7 @@ impl<V: NeuronValue> Neuron<V> {
         for (weight, input) in self.weights.iter().zip(inputs) {
             sum = sum + weight.clone() * input.clone();
         }
-        (self.activation)(sum)
+        self.activation.activate(sum)
     }
 
     fn params(&self) -> Vec<V> {
@@ -210,10 +246,20 @@ struct Layer<V: NeuronValue> {
 }
 
 impl<V: NeuronValue> Layer<V> {
-    fn new(num_inputs: usize, activation: ActivationFn<V>, num_outputs: usize) -> Self {
+    fn new(num_inputs: usize, activation: ActivationType, num_outputs: usize) -> Self {
         Layer {
             neurons: (0..num_outputs)
                 .map(|_| Neuron::new(num_inputs, activation))
+                .collect(),
+        }
+    }
+
+    fn read_only(&self) -> Layer<f64> {
+        Layer {
+            neurons: self
+                .neurons
+                .iter()
+                .map(|neuron| neuron.read_only())
                 .collect(),
         }
     }
@@ -239,7 +285,7 @@ struct MultiLayerPerceptron<V: NeuronValue> {
 }
 
 impl<V: NeuronValue> MultiLayerPerceptron<V> {
-    fn new(num_inputs: usize, activation: ActivationFn<V>, num_layer_outputs: Vec<usize>) -> Self {
+    fn new(num_inputs: usize, activation: ActivationType, num_layer_outputs: Vec<usize>) -> Self {
         let mut layers = vec![];
         let mut next_num_inputs = num_inputs;
         for num_outputs in num_layer_outputs {
@@ -247,6 +293,12 @@ impl<V: NeuronValue> MultiLayerPerceptron<V> {
             next_num_inputs = num_outputs;
         }
         Self { layers }
+    }
+
+    fn read_only(&self) -> MultiLayerPerceptron<f64> {
+        MultiLayerPerceptron {
+            layers: self.layers.iter().map(|layer| layer.read_only()).collect(),
+        }
     }
 
     fn output(&self, inputs: &Vec<V>) -> Vec<V> {
