@@ -27,6 +27,10 @@ const MIN_LEARN_RATE: i32 = 1;
 
 const LEARN_FACTOR: f64 = 0.05;
 
+const MAX_HIDDEN_LAYERS: usize = 3;
+
+const NEURONS_PER_LAYER: usize = 16;
+
 const HELP_TEXT: &'static str = r#"Help
 
 H - Toggle help
@@ -39,6 +43,7 @@ A - Toggle auto-update mode
 1 - Paint green datapoint (at mouse cursor)
 2 - Paint purple datapoint (at mouse cursor)
 X - Delete datapoint (at mouse cursor)
+L - Cycle number of hidden layers
 C - Clear all datapoints
 W - Reset weights
 "#;
@@ -54,8 +59,8 @@ async fn main() {
         Datapoint::new((-1, -3), 0),
         Datapoint::new((47, -23), 0),
     ];
-    let hidden_layers = vec![16, 16];
-    let mut perceptron = Perceptron::new(datapoints.clone(), Weights::new(hidden_layers.clone()));
+    let mut num_hidden_layers = 0;
+    let mut perceptron = make_perceptron(&datapoints, num_hidden_layers);
 
     let plot = Plot::new(PLOT_SCALE);
     let mut auto_update_time = 0;
@@ -92,7 +97,10 @@ async fn main() {
         if did_modify_datapoints {
             perceptron = Perceptron::new(datapoints.clone(), perceptron.weights());
         } else if is_key_pressed(KeyCode::W) {
-            perceptron = Perceptron::new(datapoints.clone(), Weights::new(hidden_layers.clone()));
+            perceptron = make_perceptron(&datapoints, num_hidden_layers);
+        } else if is_key_pressed(KeyCode::L) {
+            num_hidden_layers = (num_hidden_layers + 1) % MAX_HIDDEN_LAYERS;
+            perceptron = make_perceptron(&datapoints, num_hidden_layers);
         }
 
         if is_key_pressed(KeyCode::H) {
@@ -152,7 +160,7 @@ async fn main() {
         };
         draw_text(
             &format!(
-                "Loss: {:0.4?} Learning rate: {:0.3} {auto_label:4} {conv_label:11}",
+                "Loss: {:0.4?} Learn rate: {:0.3} Layers: {num_hidden_layers} {auto_label:4} {conv_label:11}",
                 perceptron.loss(),
                 learning_rate_float,
             ),
@@ -217,6 +225,13 @@ fn modify_datapoint(
         }
     }
     false
+}
+
+fn make_perceptron(datapoints: &Vec<Datapoint>, num_hidden_layers: usize) -> Perceptron {
+    Perceptron::new(
+        datapoints.clone(),
+        Weights::new((0..num_hidden_layers).map(|_| NEURONS_PER_LAYER).collect()),
+    )
 }
 
 fn run_smoke_test() {
