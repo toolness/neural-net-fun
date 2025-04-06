@@ -60,6 +60,12 @@ impl Weights {
         }
         loss = loss / Value::from(points.len() as f64);
 
+        let mut reg_loss = Value::from(0.0);
+        for p in self.0.params() {
+            reg_loss = reg_loss + p.pow(2.0);
+        }
+        loss = loss + Value::from(1e-4) * reg_loss;
+
         if calc_grad {
             for param in self.0.params().iter_mut() {
                 param.zero_grad();
