@@ -54,7 +54,8 @@ async fn main() {
         Datapoint::new((-1, -3), 0),
         Datapoint::new((47, -23), 0),
     ];
-    let mut perceptron = Perceptron::new(datapoints.clone(), Weights::random());
+    let hidden_layers = vec![4];
+    let mut perceptron = Perceptron::new(datapoints.clone(), Weights::new(hidden_layers.clone()));
 
     let plot = Plot::new(PLOT_SCALE);
     let mut auto_update_time = 0;
@@ -91,7 +92,7 @@ async fn main() {
         if did_modify_datapoints {
             perceptron = Perceptron::new(datapoints.clone(), perceptron.weights());
         } else if is_key_pressed(KeyCode::W) {
-            perceptron = Perceptron::new(datapoints.clone(), Weights::random());
+            perceptron = Perceptron::new(datapoints.clone(), Weights::new(hidden_layers.clone()));
         }
 
         if is_key_pressed(KeyCode::H) {

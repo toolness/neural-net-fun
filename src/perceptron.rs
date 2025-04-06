@@ -27,11 +27,12 @@ fn rand_f64() -> f64 {
 }
 
 impl Weights {
-    pub fn random() -> Self {
+    pub fn new(mut hidden_layers: Vec<usize>) -> Self {
+        hidden_layers.push(1);
         Self(MultiLayerPerceptron::new(
             2,
             ActivationType::Sigmoid,
-            vec![4, 1],
+            hidden_layers,
         ))
     }
 
