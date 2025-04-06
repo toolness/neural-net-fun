@@ -62,7 +62,7 @@ async fn main() {
     let mut show_help = false;
     let mut last_frame_time = get_time();
     let mut time_to_auto_update = MAX_AUTO_UPDATE_TIME as f64 / 1000.0;
-    let mut learning_rate = 1;
+    let mut learning_rate = 2;
     let help_lines: Vec<&'static str> = HELP_TEXT.split('\n').collect();
 
     loop {
@@ -132,8 +132,10 @@ async fn main() {
             is_key_pressed(KeyCode::Space)
         };
 
+        let learning_rate_float = learning_rate as f64 * LEARN_FACTOR;
+
         if should_update {
-            perceptron.update(learning_rate as f64 * LEARN_FACTOR);
+            perceptron.update(learning_rate_float);
         }
 
         plot.draw_axes();
@@ -149,8 +151,9 @@ async fn main() {
         };
         draw_text(
             &format!(
-                "Loss: {:0.4?} Learning rate: {learning_rate} {auto_label:4} {conv_label:11}",
-                perceptron.loss()
+                "Loss: {:0.4?} Learning rate: {:0.3} {auto_label:4} {conv_label:11}",
+                perceptron.loss(),
+                learning_rate_float,
             ),
             LEFT_PADDING,
             screen_height() - 30.0,
