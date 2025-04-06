@@ -1,4 +1,7 @@
-use std::fmt::Display;
+use std::{
+    fmt::Display,
+    ops::{Add, Mul},
+};
 
 use crate::{plot::Plot, value::Value};
 
@@ -17,14 +20,10 @@ impl Datapoint {
 }
 
 #[derive(Clone, Debug)]
-pub struct Weights(MultiLayerPerceptron);
+pub struct Weights(MultiLayerPerceptron<Value>);
 
 fn rand_f64() -> f64 {
     (rand() as f64 / u32::MAX as f64) * 2.0 - 1.0
-}
-
-fn rand_value() -> Value {
-    Value::from(rand_f64())
 }
 
 impl Weights {
@@ -150,29 +149,36 @@ impl Perceptron {
     }
 }
 
-type ActivationFn = fn(value: Value) -> Value;
+type ActivationFn<V> = fn(value: V) -> V;
 
 fn sigmoid(value: Value) -> Value {
     Value::from(1.0) / (Value::from(1.0) + (value * (-1.0).into()).exp())
 }
 
-#[derive(Clone, Debug)]
-struct Neuron {
-    weights: Vec<Value>,
-    bias: Value,
-    activation: ActivationFn,
+trait Val:
+    Clone + std::fmt::Debug + From<f64> + Mul<Self, Output = Self> + Add<Self, Output = Self>
+{
 }
 
-impl Neuron {
-    fn new(num_inputs: usize, activation: ActivationFn) -> Self {
+impl Val for Value {}
+
+#[derive(Clone, Debug)]
+struct Neuron<V: Val> {
+    weights: Vec<V>,
+    bias: V,
+    activation: ActivationFn<V>,
+}
+
+impl<V: Val> Neuron<V> {
+    fn new(num_inputs: usize, activation: ActivationFn<V>) -> Self {
         Neuron {
-            weights: (0..num_inputs).map(|_| rand_value()).collect(),
-            bias: rand_value(),
+            weights: (0..num_inputs).map(|_| rand_f64().into()).collect(),
+            bias: rand_f64().into(),
             activation,
         }
     }
 
-    fn output(&self, inputs: &Vec<Value>) -> Value {
+    fn output(&self, inputs: &Vec<V>) -> V {
         assert_eq!(self.weights.len(), inputs.len());
         let mut sum = self.bias.clone();
         for (weight, input) in self.weights.iter().zip(inputs) {
@@ -181,7 +187,7 @@ impl Neuron {
         (self.activation)(sum)
     }
 
-    fn params(&self) -> Vec<Value> {
+    fn params(&self) -> Vec<V> {
         let mut params = self.weights.clone();
         params.push(self.bias.clone());
         params
@@ -189,12 +195,12 @@ impl Neuron {
 }
 
 #[derive(Clone, Debug)]
-struct Layer {
-    neurons: Vec<Neuron>,
+struct Layer<V: Val> {
+    neurons: Vec<Neuron<V>>,
 }
 
-impl Layer {
-    fn new(num_inputs: usize, activation: ActivationFn, num_outputs: usize) -> Self {
+impl<V: Val> Layer<V> {
+    fn new(num_inputs: usize, activation: ActivationFn<V>, num_outputs: usize) -> Self {
         Layer {
             neurons: (0..num_outputs)
                 .map(|_| Neuron::new(num_inputs, activation))
@@ -202,14 +208,14 @@ impl Layer {
         }
     }
 
-    fn output(&self, inputs: &Vec<Value>) -> Vec<Value> {
+    fn output(&self, inputs: &Vec<V>) -> Vec<V> {
         self.neurons
             .iter()
             .map(|neuron| neuron.output(inputs))
             .collect()
     }
 
-    fn params(&self) -> Vec<Value> {
+    fn params(&self) -> Vec<V> {
         self.neurons
             .iter()
             .flat_map(|neuron| neuron.params())
@@ -218,12 +224,12 @@ impl Layer {
 }
 
 #[derive(Clone, Debug)]
-struct MultiLayerPerceptron {
-    layers: Vec<Layer>,
+struct MultiLayerPerceptron<V: Val> {
+    layers: Vec<Layer<V>>,
 }
 
-impl MultiLayerPerceptron {
-    fn new(num_inputs: usize, activation: ActivationFn, num_layer_outputs: Vec<usize>) -> Self {
+impl<V: Val> MultiLayerPerceptron<V> {
+    fn new(num_inputs: usize, activation: ActivationFn<V>, num_layer_outputs: Vec<usize>) -> Self {
         let mut layers = vec![];
         let mut next_num_inputs = num_inputs;
         for num_outputs in num_layer_outputs {
@@ -233,7 +239,7 @@ impl MultiLayerPerceptron {
         Self { layers }
     }
 
-    fn output(&self, inputs: &Vec<Value>) -> Vec<Value> {
+    fn output(&self, inputs: &Vec<V>) -> Vec<V> {
         let mut next_inputs = inputs.clone();
         for layer in &self.layers {
             let layer_outputs = layer.output(&next_inputs);
@@ -242,7 +248,7 @@ impl MultiLayerPerceptron {
         next_inputs
     }
 
-    fn params(&self) -> Vec<Value> {
+    fn params(&self) -> Vec<V> {
         self.layers
             .iter()
             .flat_map(|layer| layer.params())
