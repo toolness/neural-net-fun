@@ -138,16 +138,13 @@ impl Perceptron {
                 let inputs = vec![x as f64, y as f64];
                 let output = *mlp.output(&inputs).first().unwrap();
                 let label = if output <= 0.5 { 0 } else { 1 };
-                (x, y, label)
+                let color = if label <= 0 { DARKPURPLE } else { DARKGREEN };
+                (x, y, color)
             })
             .collect::<Vec<_>>();
 
-        for (x, y, label) in points {
-            plot.draw_point(
-                x as f32,
-                y as f32,
-                if label <= 0 { DARKPURPLE } else { DARKGREEN },
-            );
+        for (x, y, color) in points {
+            plot.draw_point(x as f32, y as f32, color);
         }
 
         // Draw datapoints.
