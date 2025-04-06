@@ -1,4 +1,7 @@
-use std::fmt::Display;
+use std::{
+    fmt::Display,
+    ops::{Add, Div, Mul},
+};
 
 use crate::{plot::Plot, value::Value};
 
@@ -17,25 +20,19 @@ impl Datapoint {
 }
 
 #[derive(Clone, Debug)]
-pub struct Weights(MultiLayerPerceptron);
+pub struct Weights(MultiLayerPerceptron<Value>);
 
 fn rand_f64() -> f64 {
     (rand() as f64 / u32::MAX as f64) * 2.0 - 1.0
 }
 
-fn rand_value() -> Value {
-    Value::from(rand_f64())
-}
-
 impl Weights {
     pub fn random() -> Self {
-        Self(MultiLayerPerceptron::new(2, sigmoid, vec![4, 1]))
-    }
-
-    fn get_label(&self, x: f64, y: f64) -> i32 {
-        let inputs = vec![Value::from(x), Value::from(y)];
-        let output = self.0.output(&inputs).first().unwrap().as_f64();
-        if output <= 0.5 { 0 } else { 1 }
+        Self(MultiLayerPerceptron::new(
+            2,
+            ActivationType::Sigmoid,
+            vec![4, 1],
+        ))
     }
 
     fn calculate_loss(&self, points: &Vec<Datapoint>, calc_grad: bool) -> Value {
@@ -127,9 +124,14 @@ impl Perceptron {
     }
 
     pub fn draw(&self, plot: &Plot) {
+        let mlp = self.weights.0.read_only();
+
         for y in -50..50 {
             for x in -50..50 {
-                let label = self.weights.get_label(x as f64, y as f64);
+                let inputs = vec![x as f64, y as f64];
+                let output = *mlp.output(&inputs).first().unwrap();
+                let label = if output <= 0.5 { 0 } else { 1 };
+
                 plot.draw_point(
                     x as f32,
                     y as f32,
@@ -150,38 +152,88 @@ impl Perceptron {
     }
 }
 
-type ActivationFn = fn(value: Value) -> Value;
+trait NeuronValue:
+    Clone
+    + std::fmt::Debug
+    + From<f64>
+    + Mul<Self, Output = Self>
+    + Add<Self, Output = Self>
+    + Div<Self, Output = Self>
+{
+    fn exp(&self) -> Self;
 
-fn sigmoid(value: Value) -> Value {
-    Value::from(1.0) / (Value::from(1.0) + (value * (-1.0).into()).exp())
+    fn as_f64(&self) -> f64;
+}
+
+impl NeuronValue for Value {
+    fn exp(&self) -> Value {
+        self.exp()
+    }
+
+    fn as_f64(&self) -> f64 {
+        self.as_f64()
+    }
+}
+
+impl NeuronValue for f64 {
+    fn exp(&self) -> f64 {
+        f64::exp(*self)
+    }
+
+    fn as_f64(&self) -> f64 {
+        *self
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+pub enum ActivationType {
+    Sigmoid,
+}
+
+impl ActivationType {
+    fn activate<V: NeuronValue>(&self, value: V) -> V {
+        match self {
+            ActivationType::Sigmoid => {
+                V::from(1.0) / (V::from(1.0) + (value * (-1.0).into()).exp())
+            }
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
-struct Neuron {
-    weights: Vec<Value>,
-    bias: Value,
-    activation: ActivationFn,
+struct Neuron<V: NeuronValue> {
+    weights: Vec<V>,
+    bias: V,
+    activation: ActivationType,
 }
 
-impl Neuron {
-    fn new(num_inputs: usize, activation: ActivationFn) -> Self {
+impl<V: NeuronValue> Neuron<V> {
+    fn new(num_inputs: usize, activation: ActivationType) -> Self {
         Neuron {
-            weights: (0..num_inputs).map(|_| rand_value()).collect(),
-            bias: rand_value(),
+            weights: (0..num_inputs).map(|_| rand_f64().into()).collect(),
+            bias: rand_f64().into(),
             activation,
         }
     }
 
-    fn output(&self, inputs: &Vec<Value>) -> Value {
+    fn read_only(&self) -> Neuron<f64> {
+        Neuron {
+            weights: self.weights.iter().map(|weight| weight.as_f64()).collect(),
+            bias: self.bias.as_f64(),
+            activation: self.activation,
+        }
+    }
+
+    fn output(&self, inputs: &Vec<V>) -> V {
         assert_eq!(self.weights.len(), inputs.len());
         let mut sum = self.bias.clone();
         for (weight, input) in self.weights.iter().zip(inputs) {
             sum = sum + weight.clone() * input.clone();
         }
-        (self.activation)(sum)
+        self.activation.activate(sum)
     }
 
-    fn params(&self) -> Vec<Value> {
+    fn params(&self) -> Vec<V> {
         let mut params = self.weights.clone();
         params.push(self.bias.clone());
         params
@@ -189,12 +241,12 @@ impl Neuron {
 }
 
 #[derive(Clone, Debug)]
-struct Layer {
-    neurons: Vec<Neuron>,
+struct Layer<V: NeuronValue> {
+    neurons: Vec<Neuron<V>>,
 }
 
-impl Layer {
-    fn new(num_inputs: usize, activation: ActivationFn, num_outputs: usize) -> Self {
+impl<V: NeuronValue> Layer<V> {
+    fn new(num_inputs: usize, activation: ActivationType, num_outputs: usize) -> Self {
         Layer {
             neurons: (0..num_outputs)
                 .map(|_| Neuron::new(num_inputs, activation))
@@ -202,14 +254,24 @@ impl Layer {
         }
     }
 
-    fn output(&self, inputs: &Vec<Value>) -> Vec<Value> {
+    fn read_only(&self) -> Layer<f64> {
+        Layer {
+            neurons: self
+                .neurons
+                .iter()
+                .map(|neuron| neuron.read_only())
+                .collect(),
+        }
+    }
+
+    fn output(&self, inputs: &Vec<V>) -> Vec<V> {
         self.neurons
             .iter()
             .map(|neuron| neuron.output(inputs))
             .collect()
     }
 
-    fn params(&self) -> Vec<Value> {
+    fn params(&self) -> Vec<V> {
         self.neurons
             .iter()
             .flat_map(|neuron| neuron.params())
@@ -218,12 +280,12 @@ impl Layer {
 }
 
 #[derive(Clone, Debug)]
-struct MultiLayerPerceptron {
-    layers: Vec<Layer>,
+struct MultiLayerPerceptron<V: NeuronValue> {
+    layers: Vec<Layer<V>>,
 }
 
-impl MultiLayerPerceptron {
-    fn new(num_inputs: usize, activation: ActivationFn, num_layer_outputs: Vec<usize>) -> Self {
+impl<V: NeuronValue> MultiLayerPerceptron<V> {
+    fn new(num_inputs: usize, activation: ActivationType, num_layer_outputs: Vec<usize>) -> Self {
         let mut layers = vec![];
         let mut next_num_inputs = num_inputs;
         for num_outputs in num_layer_outputs {
@@ -233,7 +295,13 @@ impl MultiLayerPerceptron {
         Self { layers }
     }
 
-    fn output(&self, inputs: &Vec<Value>) -> Vec<Value> {
+    fn read_only(&self) -> MultiLayerPerceptron<f64> {
+        MultiLayerPerceptron {
+            layers: self.layers.iter().map(|layer| layer.read_only()).collect(),
+        }
+    }
+
+    fn output(&self, inputs: &Vec<V>) -> Vec<V> {
         let mut next_inputs = inputs.clone();
         for layer in &self.layers {
             let layer_outputs = layer.output(&next_inputs);
@@ -242,7 +310,7 @@ impl MultiLayerPerceptron {
         next_inputs
     }
 
-    fn params(&self) -> Vec<Value> {
+    fn params(&self) -> Vec<V> {
         self.layers
             .iter()
             .flat_map(|layer| layer.params())
