@@ -8,6 +8,10 @@ use crate::{plot::Plot, value::Value};
 use macroquad::{prelude::*, rand::rand};
 use rayon::prelude::*;
 
+/// Arg, we need this to normalize the datapoints so they're roughly within (-1, 1),
+/// as this will make the data much easier to fit.
+const POINT_SCALE: f64 = 30.0;
+
 #[derive(Clone, Copy, Debug)]
 pub struct Datapoint {
     pub pos: (i32, i32),
@@ -41,8 +45,8 @@ impl Weights {
         let mut loss = Value::from(0.0);
         for point in points {
             let inputs = vec![
-                Value::from(point.pos.0 as f64),
-                Value::from(point.pos.1 as f64),
+                Value::from(point.pos.0 as f64 / POINT_SCALE),
+                Value::from(point.pos.1 as f64 / POINT_SCALE),
             ];
             let output = self.0.output(&inputs).pop().unwrap();
             let y = Value::from(point.label as f64);
@@ -135,7 +139,7 @@ impl Perceptron {
         let points = all_points
             .into_par_iter()
             .map(|(x, y)| {
-                let inputs = vec![x as f64, y as f64];
+                let inputs = vec![x as f64 / POINT_SCALE, y as f64 / POINT_SCALE];
                 let output = *mlp.output(&inputs).first().unwrap();
                 let color = if output <= 0.5 {
                     DARKPURPLE.with_alpha(if enable_shading {

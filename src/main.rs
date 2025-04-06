@@ -50,11 +50,10 @@ async fn main() {
     run_smoke_test();
 
     let mut datapoints = vec![
-        Datapoint::new((3, 1), 1),
-        Datapoint::new((2, -1), 1),
-        Datapoint::new((-2, 1), 1),
-        Datapoint::new((-1, -3), 0),
-        Datapoint::new((47, -23), 0),
+        Datapoint::new((-10, 9), 1),
+        Datapoint::new((8, 8), 1),
+        Datapoint::new((-5, -5), 0),
+        Datapoint::new((9, -10), 0),
     ];
     let mut num_hidden_layers = 0;
     let mut perceptron = make_perceptron(&datapoints, num_hidden_layers);
