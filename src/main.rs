@@ -7,7 +7,7 @@ use value::Value;
 
 use macroquad::prelude::*;
 
-use classifier_2d::{Classifier2D, Datapoint2D, Weights2D};
+use classifier_2d::{Classifier2D, Datapoint2D, Label2D, Weights2D};
 use plot::Plot;
 
 /// Each point on the plot is scaled by this many screen pixels.
@@ -53,10 +53,10 @@ async fn main() {
     run_smoke_test();
 
     let mut datapoints = vec![
-        Datapoint2D::new((-10, 9), 1),
-        Datapoint2D::new((8, 8), 1),
-        Datapoint2D::new((-5, -5), 0),
-        Datapoint2D::new((9, -10), 0),
+        Datapoint2D::new((-10, 9), Label2D::Green),
+        Datapoint2D::new((8, 8), Label2D::Green),
+        Datapoint2D::new((-5, -5), Label2D::Purple),
+        Datapoint2D::new((9, -10), Label2D::Purple),
     ];
     let mut num_hidden_layers = 0;
     let mut perceptron = make_perceptron(&datapoints, num_hidden_layers);
@@ -75,9 +75,9 @@ async fn main() {
         let mouse = (mouse_f32.0.round() as i32, mouse_f32.1.round() as i32);
 
         let did_modify_datapoints = if is_key_down(KeyCode::Key1) {
-            modify_datapoint(&mut datapoints, mouse, Some(1))
+            modify_datapoint(&mut datapoints, mouse, Some(Label2D::Green))
         } else if is_key_down(KeyCode::Key2) {
-            modify_datapoint(&mut datapoints, mouse, Some(0))
+            modify_datapoint(&mut datapoints, mouse, Some(Label2D::Purple))
         } else if is_key_down(KeyCode::X) {
             modify_datapoint(&mut datapoints, mouse, None)
         } else if is_key_pressed(KeyCode::C) {
@@ -179,17 +179,17 @@ async fn main() {
 fn modify_datapoint(
     datapoints: &mut Vec<Datapoint2D>,
     point: (i32, i32),
-    label: Option<i32>,
+    label: Option<Label2D>,
 ) -> bool {
     if let Some(label) = label {
         if let Some(dp) = datapoints.iter_mut().find(|dp| dp.pos == point) {
             if dp.label != label {
-                println!("Changing label of {point:?} to {label}.");
+                println!("Changing label of {point:?} to {label:?}.");
                 dp.label = label;
                 return true;
             }
         } else {
-            println!("Adding datapoint at {point:?} with label {label}.");
+            println!("Adding datapoint at {point:?} with label {label:?}.");
             datapoints.push(Datapoint2D::new(point, label));
             return true;
         }

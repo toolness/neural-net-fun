@@ -13,14 +13,78 @@ use rayon::prelude::*;
 /// as this will make the data much easier to fit.
 const POINT_SCALE: f64 = 30.0;
 
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum Label2D {
+    Purple,
+    Green,
+}
+
+impl From<Label2D> for f64 {
+    /// Converts the label into its "idealized"
+    /// float value, i.e. how a zero-loss
+    /// model would classify a datapoint with the
+    /// label.
+    fn from(value: Label2D) -> Self {
+        match value {
+            Label2D::Green => 1.0,
+            Label2D::Purple => 0.0,
+        }
+    }
+}
+
+impl From<f64> for Label2D {
+    /// Given a value between 0 and 1, returns the
+    /// closest appropriate label for it.
+    fn from(value: f64) -> Self {
+        if value <= 0.5 {
+            Label2D::Purple
+        } else {
+            Label2D::Green
+        }
+    }
+}
+
+impl Label2D {
+    fn as_f64(&self) -> f64 {
+        (*self).into()
+    }
+
+    fn color(&self) -> Color {
+        match self {
+            Label2D::Green => GREEN,
+            Label2D::Purple => PURPLE,
+        }
+    }
+
+    /// Given a float from 0 to 1, converts it to a color
+    /// whose intensity varies based on how "confident" the
+    /// float's corresponding label is: the closer it is to
+    /// 0.5, the less intense the color will be.
+    fn dark_color(value: f64, enable_shading: bool) -> Color {
+        let label: Label2D = value.into();
+        match label {
+            Label2D::Purple => DARKPURPLE.with_alpha(if enable_shading {
+                1.0 - value as f32 * 2.0
+            } else {
+                1.0
+            }),
+            Label2D::Green => DARKGREEN.with_alpha(if enable_shading {
+                (value as f32 - 0.5) * 2.0
+            } else {
+                1.0
+            }),
+        }
+    }
+}
+
 #[derive(Clone, Copy, Debug)]
 pub struct Datapoint2D {
     pub pos: (i32, i32),
-    pub label: i32,
+    pub label: Label2D,
 }
 
 impl Datapoint2D {
-    pub fn new(pos: (i32, i32), label: i32) -> Self {
+    pub fn new(pos: (i32, i32), label: Label2D) -> Self {
         Datapoint2D { pos, label }
     }
 }
@@ -46,7 +110,7 @@ impl Weights2D {
                 Value::from(point.pos.1 as f64 / POINT_SCALE),
             ];
             let output = self.0.output(&inputs).pop().unwrap();
-            let y = Value::from(point.label as f64);
+            let y = Value::from(point.label.as_f64());
             let single_loss = (y - output.clone()).pow(2.0);
             // println!(
             //     "{point:?}, sigmoid={:0.2} loss={:0.2}",
@@ -138,19 +202,7 @@ impl Classifier2D {
             .map(|(x, y)| {
                 let inputs = vec![x as f64 / POINT_SCALE, y as f64 / POINT_SCALE];
                 let output = *mlp.output(&inputs).first().unwrap();
-                let color = if output <= 0.5 {
-                    DARKPURPLE.with_alpha(if enable_shading {
-                        1.0 - output as f32 * 2.0
-                    } else {
-                        1.0
-                    })
-                } else {
-                    DARKGREEN.with_alpha(if enable_shading {
-                        (output as f32 - 0.5) * 2.0
-                    } else {
-                        1.0
-                    })
-                };
+                let color = Label2D::dark_color(output, enable_shading);
                 (x, y, color)
             })
             .collect::<Vec<_>>();
@@ -165,7 +217,7 @@ impl Classifier2D {
                 point.pos.0 as f32,
                 point.pos.1 as f32,
                 0.5,
-                if point.label <= 0 { PURPLE } else { GREEN },
+                point.label.color(),
             );
         }
     }
