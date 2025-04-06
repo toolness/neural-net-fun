@@ -54,7 +54,7 @@ async fn main() {
         Datapoint::new((-1, -3), 0),
         Datapoint::new((47, -23), 0),
     ];
-    let hidden_layers = vec![4];
+    let hidden_layers = vec![16, 16];
     let mut perceptron = Perceptron::new(datapoints.clone(), Weights::new(hidden_layers.clone()));
 
     let plot = Plot::new(PLOT_SCALE);

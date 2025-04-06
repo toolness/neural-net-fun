@@ -6,6 +6,7 @@ use std::{
 use crate::{plot::Plot, value::Value};
 
 use macroquad::{prelude::*, rand::rand};
+use rayon::prelude::*;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Datapoint {
@@ -127,18 +128,26 @@ impl Perceptron {
     pub fn draw(&self, plot: &Plot) {
         let mlp = self.weights.0.read_only();
 
-        for y in -50..50 {
-            for x in -50..50 {
+        let all_points = (-50..50)
+            .flat_map(|y| (-50..50).map(move |x| (x, y)))
+            .collect::<Vec<_>>();
+
+        let points = all_points
+            .into_par_iter()
+            .map(|(x, y)| {
                 let inputs = vec![x as f64, y as f64];
                 let output = *mlp.output(&inputs).first().unwrap();
                 let label = if output <= 0.5 { 0 } else { 1 };
+                (x, y, label)
+            })
+            .collect::<Vec<_>>();
 
-                plot.draw_point(
-                    x as f32,
-                    y as f32,
-                    if label <= 0 { DARKPURPLE } else { DARKGREEN },
-                );
-            }
+        for (x, y, label) in points {
+            plot.draw_point(
+                x as f32,
+                y as f32,
+                if label <= 0 { DARKPURPLE } else { DARKGREEN },
+            );
         }
 
         // Draw datapoints.
