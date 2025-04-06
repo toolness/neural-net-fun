@@ -101,6 +101,10 @@ impl Weights2D {
             hidden_layers,
         ))
     }
+
+    pub fn num_params(&self) -> usize {
+        self.0.params().len()
+    }
 }
 
 impl Display for Weights2D {
@@ -120,22 +124,25 @@ pub struct Classifier2D {
     weights: Weights2D,
     loss: f64,
     accuracy: f64,
+    num_params: usize,
 }
 
 impl Classifier2D {
     pub fn new(datapoints: Vec<Datapoint2D>, weights: Weights2D) -> Self {
+        let num_params = weights.num_params();
         let mut classifier = Classifier2D {
             datapoints,
             weights,
             loss: 0.0,
             accuracy: 0.0,
+            num_params,
         };
         classifier.calculate_loss_and_accuracy(false);
         classifier
     }
 
-    pub fn has_converged(&self) -> bool {
-        self.loss < 0.0001
+    pub fn num_params(&self) -> usize {
+        self.num_params
     }
 
     pub fn update(&mut self, learning_rate: f64) {

@@ -129,17 +129,13 @@ async fn main() {
 
         perceptron.draw(&plot, enable_shading);
 
-        let conv_label = if perceptron.has_converged() {
-            "CONV"
-        } else {
-            ""
-        };
         draw_text(
             &format!(
-                "Loss: {:0.4?} Acc: {}% LR: {:0.3} Spd: {updates_per_frame} Layers: {num_hidden_layers} {conv_label:11}",
+                "Loss: {:0.4?} Acc: {}% LR: {:0.3} Spd: {updates_per_frame} HL: {num_hidden_layers} ({} params)",
                 perceptron.loss(),
                 (perceptron.accuracy() * 100.0).floor(),
                 learning_rate,
+                perceptron.num_params()
             ),
             LEFT_PADDING,
             screen_height() - 30.0,
