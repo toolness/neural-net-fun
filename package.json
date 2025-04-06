@@ -1,0 +1,25 @@
+{
+  "name": "neural-net-fun",
+  "version": "1.0.0",
+  "description": "Tinkering with neural nets in Rust.",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "deploy": "sh build-wasm.sh && gh-pages -d dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/toolness/neural-net-fun.git"
+  },
+  "author": "Atul Varma <varmaa@gmail.com>",
+  "license": "CC0-1.0",
+  "bugs": {
+    "url": "https://github.com/toolness/neural-net-fun/issues"
+  },
+  "homepage": "https://github.com/toolness/neural-net-fun#readme",
+  "dependencies": {
+    "gh-pages": "^6.3.0"
+  }
+}

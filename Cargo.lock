@@ -197,14 +197,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "micrograd-rust-fun"
-version = "0.1.0"
-dependencies = [
- "macroquad",
- "rayon",
-]
-
-[[package]]
 name = "miniquad"
 version = "0.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -231,6 +223,14 @@ name = "ndk-sys"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e1bcdd74c20ad5d95aacd60ef9ba40fdf77f767051040541df557b7a9b2a2121"
+
+[[package]]
+name = "neural-net-fun"
+version = "0.1.0"
+dependencies = [
+ "macroquad",
+ "rayon",
+]
 
 [[package]]
 name = "num-traits"

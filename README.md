@@ -19,6 +19,19 @@ cargo run --release
 
 Once the window opens, you can press `H` for help.
 
+## Web version
+
+To build the web version, run:
+
+```
+sh build-wasm.sh
+```
+
+Then run a web server (e.g. `basic-http-server`, installable via `cargo`) in the
+root of the `dist` directory and visit it.
+
+You can deploy the web version with `npm run deploy`.
+
 ## Related resources
 
 - See also [perceptron-fun], my interactive lab for
