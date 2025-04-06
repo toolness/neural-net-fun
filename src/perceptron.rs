@@ -151,11 +151,11 @@ impl Perceptron {
 
 type ActivationFn<V> = fn(value: V) -> V;
 
-fn sigmoid<V: Val>(value: V) -> V {
+fn sigmoid<V: NeuronValue>(value: V) -> V {
     V::from(1.0) / (V::from(1.0) + (value * (-1.0).into()).exp())
 }
 
-trait Val:
+trait NeuronValue:
     Clone
     + std::fmt::Debug
     + From<f64>
@@ -166,20 +166,20 @@ trait Val:
     fn exp(&self) -> Self;
 }
 
-impl Val for Value {
+impl NeuronValue for Value {
     fn exp(&self) -> Value {
         self.exp()
     }
 }
 
 #[derive(Clone, Debug)]
-struct Neuron<V: Val> {
+struct Neuron<V: NeuronValue> {
     weights: Vec<V>,
     bias: V,
     activation: ActivationFn<V>,
 }
 
-impl<V: Val> Neuron<V> {
+impl<V: NeuronValue> Neuron<V> {
     fn new(num_inputs: usize, activation: ActivationFn<V>) -> Self {
         Neuron {
             weights: (0..num_inputs).map(|_| rand_f64().into()).collect(),
@@ -205,11 +205,11 @@ impl<V: Val> Neuron<V> {
 }
 
 #[derive(Clone, Debug)]
-struct Layer<V: Val> {
+struct Layer<V: NeuronValue> {
     neurons: Vec<Neuron<V>>,
 }
 
-impl<V: Val> Layer<V> {
+impl<V: NeuronValue> Layer<V> {
     fn new(num_inputs: usize, activation: ActivationFn<V>, num_outputs: usize) -> Self {
         Layer {
             neurons: (0..num_outputs)
@@ -234,11 +234,11 @@ impl<V: Val> Layer<V> {
 }
 
 #[derive(Clone, Debug)]
-struct MultiLayerPerceptron<V: Val> {
+struct MultiLayerPerceptron<V: NeuronValue> {
     layers: Vec<Layer<V>>,
 }
 
-impl<V: Val> MultiLayerPerceptron<V> {
+impl<V: NeuronValue> MultiLayerPerceptron<V> {
     fn new(num_inputs: usize, activation: ActivationFn<V>, num_layer_outputs: Vec<usize>) -> Self {
         let mut layers = vec![];
         let mut next_num_inputs = num_inputs;
