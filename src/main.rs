@@ -23,12 +23,17 @@ const AUTO_UPDATE_INCREMENT: i32 = 25;
 /// Empty space between left side of screen and text, in pixels.
 const LEFT_PADDING: f32 = 10.0;
 
-const MIN_LEARN_RATE: i32 = 1;
+/// Minimum learning speed value, as an integer.
+const MIN_LEARN_SPEED: i32 = 1;
 
-const LEARN_FACTOR: f64 = 0.05;
+/// The learning speed is multiplied by this scaling factor to
+/// arrive at the actual learning rate.
+const LEARN_SCALE: f64 = 0.05;
 
+/// Maximum number of hidden layers in the multi-layer perceptron.
 const MAX_HIDDEN_LAYERS: usize = 3;
 
+/// Number of neuron in each hidden layer of the multi-layer perceptron.
 const NEURONS_PER_LAYER: usize = 16;
 
 const HELP_TEXT: &'static str = r#"Help
@@ -70,7 +75,7 @@ async fn main() {
     let mut show_help = false;
     let mut last_frame_time = get_time();
     let mut time_to_auto_update = MAX_AUTO_UPDATE_TIME as f64 / 1000.0;
-    let mut learning_rate = 2;
+    let mut learning_speed = 2;
     let help_lines: Vec<&'static str> = HELP_TEXT.split('\n').collect();
 
     loop {
@@ -130,9 +135,9 @@ async fn main() {
         }
 
         if is_key_pressed(KeyCode::Comma) {
-            learning_rate = std::cmp::max(learning_rate - 1, MIN_LEARN_RATE);
+            learning_speed = std::cmp::max(learning_speed - 1, MIN_LEARN_SPEED);
         } else if is_key_pressed(KeyCode::Period) {
-            learning_rate += 1;
+            learning_speed += 1;
         }
 
         let should_update = if auto_update {
@@ -147,10 +152,10 @@ async fn main() {
             is_key_pressed(KeyCode::Space)
         };
 
-        let learning_rate_float = learning_rate as f64 * LEARN_FACTOR;
+        let learning_rate = learning_speed as f64 * LEARN_SCALE;
 
         if should_update {
-            perceptron.update(learning_rate_float);
+            perceptron.update(learning_rate);
         }
 
         plot.draw_axes();
@@ -168,7 +173,7 @@ async fn main() {
             &format!(
                 "Loss: {:0.4?} Learn rate: {:0.3} Layers: {num_hidden_layers} {auto_label:4} {conv_label:11}",
                 perceptron.loss(),
-                learning_rate_float,
+                learning_rate,
             ),
             LEFT_PADDING,
             screen_height() - 30.0,
