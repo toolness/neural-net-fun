@@ -36,7 +36,7 @@ impl Weights {
         hidden_layers.push(1);
         Self(MultiLayerPerceptron::new(
             2,
-            ActivationType::Sigmoid,
+            ActivationType::ReLU,
             hidden_layers,
         ))
     }
@@ -184,6 +184,8 @@ trait NeuronValue:
 {
     fn exp(&self) -> Self;
 
+    fn relu(&self) -> Self;
+
     fn as_f64(&self) -> f64;
 }
 
@@ -195,6 +197,10 @@ impl NeuronValue for Value {
     fn as_f64(&self) -> f64 {
         self.as_f64()
     }
+
+    fn relu(&self) -> Self {
+        self.relu()
+    }
 }
 
 impl NeuronValue for f64 {
@@ -205,11 +211,16 @@ impl NeuronValue for f64 {
     fn as_f64(&self) -> f64 {
         *self
     }
+
+    fn relu(&self) -> Self {
+        if *self <= 0.0 { 0.0 } else { *self }
+    }
 }
 
 #[derive(Clone, Copy, Debug)]
 pub enum ActivationType {
     Sigmoid,
+    ReLU,
 }
 
 impl ActivationType {
@@ -218,6 +229,7 @@ impl ActivationType {
             ActivationType::Sigmoid => {
                 V::from(1.0) / (V::from(1.0) + (value * (-1.0).into()).exp())
             }
+            ActivationType::ReLU => value.relu(),
         }
     }
 }

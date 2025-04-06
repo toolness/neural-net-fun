@@ -35,6 +35,15 @@ impl Value {
         InnerValue::new(ValueType::UnaryOp(UnaryOp::Exp, self.clone()), exp).into()
     }
 
+    pub fn relu(&self) -> Value {
+        let relu = if self.as_f64() <= 0.0 {
+            0.0
+        } else {
+            self.as_f64()
+        };
+        InnerValue::new(ValueType::UnaryOp(UnaryOp::ReLU, self.clone()), relu).into()
+    }
+
     pub fn pow(&self, value: f64) -> Value {
         let pow = self.as_f64().powf(value);
         InnerValue::new(
@@ -78,6 +87,9 @@ impl Value {
         match &value._type {
             ValueType::Float(_) => {}
             ValueType::UnaryOp(UnaryOp::Exp, a) => {
+                a.0.borrow_mut().grad += value.value * value.grad;
+            }
+            ValueType::UnaryOp(UnaryOp::ReLU, a) => {
                 a.0.borrow_mut().grad += value.value * value.grad;
             }
             ValueType::BinaryOp(BinaryOp::Pow, a, pow) => {
@@ -175,6 +187,7 @@ impl Display for BinaryOp {
 #[derive(Debug)]
 enum UnaryOp {
     Exp,
+    ReLU,
 }
 
 impl Display for UnaryOp {
@@ -184,6 +197,7 @@ impl Display for UnaryOp {
             "{}",
             match self {
                 UnaryOp::Exp => "exp",
+                UnaryOp::ReLU => "relu",
             }
         )
     }
