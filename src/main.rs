@@ -1,3 +1,4 @@
+mod engine;
 mod perceptron;
 mod plot;
 mod value;
