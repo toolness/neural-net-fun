@@ -1,5 +1,5 @@
+mod classifier_2d;
 mod engine;
-mod perceptron;
 mod plot;
 mod value;
 
@@ -7,7 +7,7 @@ use value::Value;
 
 use macroquad::prelude::*;
 
-use perceptron::{Datapoint, Perceptron, Weights};
+use classifier_2d::{Classifier2D, Datapoint2D, Weights2D};
 use plot::Plot;
 
 /// Each point on the plot is scaled by this many screen pixels.
@@ -53,10 +53,10 @@ async fn main() {
     run_smoke_test();
 
     let mut datapoints = vec![
-        Datapoint::new((-10, 9), 1),
-        Datapoint::new((8, 8), 1),
-        Datapoint::new((-5, -5), 0),
-        Datapoint::new((9, -10), 0),
+        Datapoint2D::new((-10, 9), 1),
+        Datapoint2D::new((8, 8), 1),
+        Datapoint2D::new((-5, -5), 0),
+        Datapoint2D::new((9, -10), 0),
     ];
     let mut num_hidden_layers = 0;
     let mut perceptron = make_perceptron(&datapoints, num_hidden_layers);
@@ -88,7 +88,7 @@ async fn main() {
         };
 
         if did_modify_datapoints {
-            perceptron = Perceptron::new(datapoints.clone(), perceptron.weights());
+            perceptron = Classifier2D::new(datapoints.clone(), perceptron.weights());
         } else if is_key_pressed(KeyCode::W) {
             perceptron = make_perceptron(&datapoints, num_hidden_layers);
         } else if is_key_pressed(KeyCode::L) {
@@ -177,7 +177,7 @@ async fn main() {
 ///
 /// Returns whether the datapoints were changed.
 fn modify_datapoint(
-    datapoints: &mut Vec<Datapoint>,
+    datapoints: &mut Vec<Datapoint2D>,
     point: (i32, i32),
     label: Option<i32>,
 ) -> bool {
@@ -190,7 +190,7 @@ fn modify_datapoint(
             }
         } else {
             println!("Adding datapoint at {point:?} with label {label}.");
-            datapoints.push(Datapoint::new(point, label));
+            datapoints.push(Datapoint2D::new(point, label));
             return true;
         }
     } else {
@@ -203,10 +203,10 @@ fn modify_datapoint(
     false
 }
 
-fn make_perceptron(datapoints: &Vec<Datapoint>, num_hidden_layers: usize) -> Perceptron {
-    Perceptron::new(
+fn make_perceptron(datapoints: &Vec<Datapoint2D>, num_hidden_layers: usize) -> Classifier2D {
+    Classifier2D::new(
         datapoints.clone(),
-        Weights::new((0..num_hidden_layers).map(|_| NEURONS_PER_LAYER).collect()),
+        Weights2D::new((0..num_hidden_layers).map(|_| NEURONS_PER_LAYER).collect()),
     )
 }
 

@@ -14,21 +14,21 @@ use rayon::prelude::*;
 const POINT_SCALE: f64 = 30.0;
 
 #[derive(Clone, Copy, Debug)]
-pub struct Datapoint {
+pub struct Datapoint2D {
     pub pos: (i32, i32),
     pub label: i32,
 }
 
-impl Datapoint {
+impl Datapoint2D {
     pub fn new(pos: (i32, i32), label: i32) -> Self {
-        Datapoint { pos, label }
+        Datapoint2D { pos, label }
     }
 }
 
 #[derive(Clone, Debug)]
-pub struct Weights(MultiLayerPerceptron<Value>);
+pub struct Weights2D(MultiLayerPerceptron<Value>);
 
-impl Weights {
+impl Weights2D {
     pub fn new(mut hidden_layers: Vec<usize>) -> Self {
         hidden_layers.push(1);
         Self(MultiLayerPerceptron::new(
@@ -38,7 +38,7 @@ impl Weights {
         ))
     }
 
-    fn calculate_loss(&self, points: &Vec<Datapoint>, calc_grad: bool) -> Value {
+    fn calculate_loss(&self, points: &Vec<Datapoint2D>, calc_grad: bool) -> Value {
         let mut loss = Value::from(0.0);
         for point in points {
             let inputs = vec![
@@ -79,7 +79,7 @@ impl Weights {
     }
 }
 
-impl Display for Weights {
+impl Display for Weights2D {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let floats: Vec<String> = self
             .0
@@ -91,16 +91,16 @@ impl Display for Weights {
     }
 }
 
-pub struct Perceptron {
-    datapoints: Vec<Datapoint>,
-    weights: Weights,
+pub struct Classifier2D {
+    datapoints: Vec<Datapoint2D>,
+    weights: Weights2D,
     loss: f64,
 }
 
-impl Perceptron {
-    pub fn new(datapoints: Vec<Datapoint>, weights: Weights) -> Self {
+impl Classifier2D {
+    pub fn new(datapoints: Vec<Datapoint2D>, weights: Weights2D) -> Self {
         let loss = weights.calculate_loss(&datapoints, false).as_f64();
-        Perceptron {
+        Classifier2D {
             datapoints,
             weights,
             loss,
@@ -118,7 +118,7 @@ impl Perceptron {
     }
 
     /// Return the weights.
-    pub fn weights(&self) -> Weights {
+    pub fn weights(&self) -> Weights2D {
         self.weights.clone()
     }
 
