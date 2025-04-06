@@ -26,6 +26,9 @@ const LEARN_SCALE: f64 = 0.05;
 const MAX_HIDDEN_LAYERS: usize = 3;
 
 /// Number of neuron in each hidden layer of the multi-layer perceptron.
+///
+/// This is mentioned in `HELP_TEXT` below, so if you change it here,
+/// change it there too.
 const NEURONS_PER_LAYER: usize = 16;
 
 const HELP_TEXT: &'static str = r#"Help
@@ -38,7 +41,7 @@ H - Toggle help
 1 - Paint green datapoint (at mouse cursor)
 2 - Paint purple datapoint (at mouse cursor)
 X - Delete datapoint (at mouse cursor)
-L - Cycle number of hidden layers
+L - Cycle number of hidden layers (16 neurons per layer)
 C - Clear all datapoints
 W - Reset weights
 S - Toggle point mesh shading
