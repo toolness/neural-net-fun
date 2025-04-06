@@ -46,6 +46,7 @@ X - Delete datapoint (at mouse cursor)
 L - Cycle number of hidden layers
 C - Clear all datapoints
 W - Reset weights
+S - Toggle point mesh shading
 "#;
 
 #[macroquad::main("Perceptron Fun")]
@@ -63,6 +64,7 @@ async fn main() {
     let mut perceptron = make_perceptron(&datapoints, num_hidden_layers);
 
     let plot = Plot::new(PLOT_SCALE);
+    let mut enable_shading = false;
     let mut auto_update_time = 0;
     let mut auto_update = true;
     let mut show_help = false;
@@ -112,6 +114,10 @@ async fn main() {
             time_to_auto_update = 0.0;
         }
 
+        if is_key_pressed(KeyCode::S) {
+            enable_shading = !enable_shading;
+        }
+
         if is_key_pressed(KeyCode::LeftBracket) {
             // The reason we store auto-update numbers as integers is so we can use std::cmp
             // functions, as floats aren't fully-ordered.
@@ -150,7 +156,7 @@ async fn main() {
         plot.draw_axes();
         plot.draw_circle(mouse.0 as f32, mouse.1 as f32, 0.75, DARKGRAY);
 
-        perceptron.draw(&plot);
+        perceptron.draw(&plot, enable_shading);
 
         let auto_label = if auto_update { "AUTO" } else { "" };
         let conv_label = if perceptron.has_converged() {

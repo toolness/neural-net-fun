@@ -125,7 +125,7 @@ impl Perceptron {
         self.loss
     }
 
-    pub fn draw(&self, plot: &Plot) {
+    pub fn draw(&self, plot: &Plot, enable_shading: bool) {
         let mlp = self.weights.0.read_only();
 
         let all_points = (-50..50)
@@ -137,8 +137,19 @@ impl Perceptron {
             .map(|(x, y)| {
                 let inputs = vec![x as f64, y as f64];
                 let output = *mlp.output(&inputs).first().unwrap();
-                let label = if output <= 0.5 { 0 } else { 1 };
-                let color = if label <= 0 { DARKPURPLE } else { DARKGREEN };
+                let color = if output <= 0.5 {
+                    DARKPURPLE.with_alpha(if enable_shading {
+                        1.0 - output as f32 * 2.0
+                    } else {
+                        1.0
+                    })
+                } else {
+                    DARKGREEN.with_alpha(if enable_shading {
+                        (output as f32 - 0.5) * 2.0
+                    } else {
+                        1.0
+                    })
+                };
                 (x, y, color)
             })
             .collect::<Vec<_>>();
