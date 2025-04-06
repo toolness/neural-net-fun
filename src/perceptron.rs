@@ -105,7 +105,7 @@ impl Perceptron {
     }
 
     pub fn has_converged(&self) -> bool {
-        false
+        self.loss < 0.0001
     }
 
     pub fn update(&mut self, learning_rate: f64) {
