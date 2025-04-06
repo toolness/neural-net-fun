@@ -31,7 +31,6 @@ const NEURONS_PER_LAYER: usize = 16;
 const HELP_TEXT: &'static str = r#"Help
 
 H - Toggle help
-SPACE - Update perceptron
 [ - Decrease updates per frame
 ] - Increase updates per frame
 , - Decrease learning rate
