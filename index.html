@@ -16,6 +16,14 @@
             position: absolute;
             background: black;
             z-index: 0;
+
+            /**
+             * Not sure wich browsers support which of these values, but
+             * they both seem to do the same thing so we'll use both and
+             * hope one sticks.
+             */
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
         }
     </style>
 </head>
