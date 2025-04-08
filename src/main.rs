@@ -48,7 +48,7 @@ W - Reset weights
 S - Toggle point mesh shading
 "#;
 
-#[macroquad::main("Perceptron Fun")]
+#[macroquad::main("Neural Net Fun")]
 async fn main() {
     run_smoke_test();
 
