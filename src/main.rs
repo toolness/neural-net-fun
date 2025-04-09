@@ -1,8 +1,10 @@
+mod button;
 mod classifier_2d;
 mod engine;
 mod plot;
 mod value;
 
+use button::Button;
 use value::Value;
 
 use macroquad::prelude::*;
@@ -66,20 +68,36 @@ async fn main() {
     let mut enable_shading = false;
     let mut show_help = false;
     let mut learning_speed = 2;
+    let mut current_brush: Option<Label2D> = Some(Label2D::Green);
     let help_lines: Vec<&'static str> = HELP_TEXT.split('\n').collect();
+
+    let label_button_rect = Rect {
+        x: LEFT_PADDING,
+        y: screen_height() - 90.0,
+        w: 32.0,
+        h: 32.0,
+    };
+    let ui_rects = vec![label_button_rect];
 
     loop {
         clear_background(BLACK);
 
-        let mouse_f32 = plot.from_screen_point(mouse_position());
+        let raw_mouse_pos = mouse_position();
+        let mouse_f32 = plot.from_screen_point(raw_mouse_pos);
         let mouse = (mouse_f32.0.round() as i32, mouse_f32.1.round() as i32);
 
-        let did_modify_datapoints = if is_key_down(KeyCode::Key1) {
+        let is_mouse_outside_ui = ui_rects
+            .iter()
+            .all(|rect| !rect.contains(raw_mouse_pos.into()));
+
+        let did_modify_datapoints = if is_mouse_outside_ui && is_key_down(KeyCode::Key1) {
             modify_datapoint(&mut datapoints, mouse, Some(Label2D::Green))
-        } else if is_key_down(KeyCode::Key2) {
+        } else if is_mouse_outside_ui && is_key_down(KeyCode::Key2) {
             modify_datapoint(&mut datapoints, mouse, Some(Label2D::Purple))
-        } else if is_key_down(KeyCode::X) {
+        } else if is_mouse_outside_ui && is_key_down(KeyCode::X) {
             modify_datapoint(&mut datapoints, mouse, None)
+        } else if is_mouse_outside_ui && is_mouse_button_down(MouseButton::Left) {
+            modify_datapoint(&mut datapoints, mouse, current_brush)
         } else if is_key_pressed(KeyCode::C) {
             datapoints = vec![];
             true
@@ -142,6 +160,21 @@ async fn main() {
             30.0,
             WHITE,
         );
+
+        if Button::at(label_button_rect)
+            .with_background(if let Some(label) = current_brush {
+                label.color()
+            } else {
+                BLACK
+            })
+            .clicked()
+        {
+            current_brush = match current_brush {
+                None => Some(Label2D::Green),
+                Some(Label2D::Green) => Some(Label2D::Purple),
+                Some(Label2D::Purple) => None,
+            };
+        }
 
         if show_help {
             for (index, line) in help_lines.iter().enumerate() {

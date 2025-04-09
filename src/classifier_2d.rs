@@ -49,7 +49,7 @@ impl Label2D {
         (*self).into()
     }
 
-    fn color(&self) -> Color {
+    pub fn color(&self) -> Color {
         match self {
             Label2D::Green => GREEN,
             Label2D::Purple => PURPLE,
