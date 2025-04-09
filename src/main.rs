@@ -34,6 +34,9 @@ const MAX_HIDDEN_LAYERS: usize = 3;
 /// you change it here, change it there too.
 const NEURONS_PER_LAYER: usize = 16;
 
+/// Maximum number of times we'll make the neural net learn per frame.
+const MAX_UPDATES_PER_FRAME: i32 = 10;
+
 const HELP_TEXT: &'static str = r#"Help
 
 H - Toggle help
@@ -140,7 +143,7 @@ async fn main() {
         if is_key_pressed(KeyCode::LeftBracket) {
             updates_per_frame = std::cmp::max(updates_per_frame - 1, 0);
         } else if is_key_pressed(KeyCode::RightBracket) {
-            updates_per_frame += 1;
+            updates_per_frame = std::cmp::min(updates_per_frame + 1, MAX_UPDATES_PER_FRAME);
         }
 
         if is_key_pressed(KeyCode::Comma) {
@@ -166,8 +169,13 @@ async fn main() {
         updates_per_frame = Button::at(updates_per_frame_rect)
             .with_background(BLACK)
             .with_text(&updates_per_frame_text, 20.0, WHITE)
-            .slider_value(0.0, 10.0, 1.0, updates_per_frame as f32, GRAY)
-            as i32;
+            .slider_value(
+                0.0,
+                MAX_UPDATES_PER_FRAME as f32,
+                1.0,
+                updates_per_frame as f32,
+                GRAY,
+            ) as i32;
 
         draw_text(
             &format!(
