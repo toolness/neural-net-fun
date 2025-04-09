@@ -63,7 +63,7 @@ impl Label2D {
     fn dark_color(value: f64, enable_shading: bool) -> Color {
         let label: Label2D = value.into();
         match label {
-            Label2D::Purple => DARKPURPLE.with_alpha(if enable_shading {
+            Label2D::Purple => VIOLET.with_alpha(if enable_shading {
                 1.0 - value as f32 * 2.0
             } else {
                 1.0
