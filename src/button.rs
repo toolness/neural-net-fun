@@ -47,11 +47,7 @@ impl Button {
         }
         if is_mouse_button_pressed(MouseButton::Left) {
             let (x, y) = mouse_position();
-            if x >= self.x
-                && x <= self.x + self.width
-                && self.y >= self.y
-                && self.y <= self.y + self.height
-            {
+            if x >= self.x && x <= self.x + self.width && y >= self.y && y <= self.y + self.height {
                 return true;
             }
         }
