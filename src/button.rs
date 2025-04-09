@@ -31,8 +31,11 @@ impl<'a> Button<'a> {
         self
     }
 
-    pub fn clicked(&self) -> bool {
+    fn draw_background(&self) {
         draw_rectangle(self.x, self.y, self.width, self.height, self.background);
+    }
+
+    fn draw_foreground(&self) {
         draw_rectangle_lines(self.x, self.y, self.width, self.height, 2.0, WHITE);
         if let Some((text, size, color)) = self.text {
             let metrics = measure_text(text, None, size as u16, 1.0);
@@ -45,12 +48,53 @@ impl<'a> Button<'a> {
                 color,
             );
         }
-        if is_mouse_button_pressed(MouseButton::Left) {
-            let (x, y) = mouse_position();
-            if x >= self.x && x <= self.x + self.width && y >= self.y && y <= self.y + self.height {
-                return true;
-            }
-        }
-        false
     }
+
+    fn is_mouse_in_bounds(&self) -> bool {
+        let (x, y) = mouse_position();
+        x >= self.x && x <= self.x + self.width && y >= self.y && y <= self.y + self.height
+    }
+
+    pub fn slider_value(&self, min: f32, max: f32, step: f32, current: f32, color: Color) -> f32 {
+        self.draw_background();
+        let value = if is_mouse_button_down(MouseButton::Left) && self.is_mouse_in_bounds() {
+            let x = mouse_position().0;
+            convert_percentage_to_slider_value((x - self.x) / self.width, min, max, step)
+        } else {
+            current
+        };
+
+        // Draw slider bar.
+        let value_pct = (value - min) / (max - min);
+        draw_rectangle(self.x, self.y, self.width * value_pct, self.height, color);
+
+        self.draw_foreground();
+        value
+    }
+
+    pub fn clicked(&self) -> bool {
+        self.draw_background();
+        self.draw_foreground();
+        is_mouse_button_pressed(MouseButton::Left) && self.is_mouse_in_bounds()
+    }
+}
+
+/// This function was written by Claude.
+///
+/// `percentage` should be between 0 and 1, representing position on slider.
+fn convert_percentage_to_slider_value(percentage: f32, min: f32, max: f32, step: f32) -> f32 {
+    // Ensure mouse_x is clamped between 0 and 1
+    let clamped_x = percentage.clamp(0.0, 1.0);
+
+    // Calculate the raw value in the target range
+    let raw_value = min + clamped_x * (max - min);
+
+    // Calculate how many steps this represents
+    let steps = ((raw_value - min) / step).round();
+
+    // Convert back to the actual value aligned to steps
+    let result = min + steps * step;
+
+    // Ensure the result doesn't exceed max due to floating point precision
+    result.min(max)
 }

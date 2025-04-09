@@ -80,11 +80,17 @@ async fn main() {
     };
     let label_arch_rect = Rect {
         x: label_button_rect.right() + LEFT_PADDING,
-        y: screen_height() - 90.0,
+        y: y_ui,
         w: 96.0,
         h: 32.0,
     };
-    let ui_rects = vec![label_button_rect, label_arch_rect];
+    let updates_per_frame_rect = Rect {
+        x: label_arch_rect.right() + LEFT_PADDING,
+        y: y_ui,
+        w: 96.0,
+        h: 32.0,
+    };
+    let ui_rects = vec![label_button_rect, label_arch_rect, updates_per_frame_rect];
 
     loop {
         clear_background(BLACK);
@@ -151,9 +157,16 @@ async fn main() {
 
         perceptron.draw(&plot, enable_shading);
 
+        let updates_per_frame_text = format!("Speed: {updates_per_frame}");
+        updates_per_frame = Button::at(updates_per_frame_rect)
+            .with_background(BLACK)
+            .with_text(&updates_per_frame_text, 20.0, WHITE)
+            .slider_value(0.0, 10.0, 1.0, updates_per_frame as f32, GRAY)
+            as i32;
+
         draw_text(
             &format!(
-                "Loss: {:0.4?} Acc: {}% LR: {:0.3} Spd: {updates_per_frame} Params: {}",
+                "Loss: {:0.4?} Acc: {}% LR: {:0.3} Params: {}",
                 perceptron.loss(),
                 (perceptron.accuracy() * 100.0).floor(),
                 learning_rate,
