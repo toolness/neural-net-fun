@@ -21,6 +21,9 @@ const LEFT_PADDING: f32 = 10.0;
 /// Minimum learning speed value, as an integer.
 const MIN_LEARN_SPEED: i32 = 1;
 
+/// Minimum learning speed value, as an integer.
+const MAX_LEARN_SPEED: i32 = 50;
+
 /// The learning speed is multiplied by this scaling factor to
 /// arrive at the actual learning rate.
 const LEARN_SCALE: f64 = 0.05;
@@ -151,7 +154,7 @@ async fn main() {
             // functions, as floats aren't fully-ordered.
             learning_speed = std::cmp::max(learning_speed - 1, MIN_LEARN_SPEED);
         } else if is_key_pressed(KeyCode::Period) {
-            learning_speed += 1;
+            learning_speed = std::cmp::min(learning_speed + 1, MAX_LEARN_SPEED);
         }
 
         let learning_rate = learning_speed as f64 * LEARN_SCALE;
