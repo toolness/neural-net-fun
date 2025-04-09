@@ -30,8 +30,8 @@ const MAX_HIDDEN_LAYERS: usize = 3;
 
 /// Number of neuron in each hidden layer of the multi-layer perceptron.
 ///
-/// This is mentioned in `HELP_TEXT` below, so if you change it here,
-/// change it there too.
+/// This is mentioned in `HELP_TEXT` and `get_layer_notation` below, so if
+/// you change it here, change it there too.
 const NEURONS_PER_LAYER: usize = 16;
 
 const HELP_TEXT: &'static str = r#"Help
@@ -71,13 +71,20 @@ async fn main() {
     let mut current_brush: Option<Label2D> = Some(Label2D::Green);
     let help_lines: Vec<&'static str> = HELP_TEXT.split('\n').collect();
 
+    let y_ui = screen_height() - 90.0;
     let label_button_rect = Rect {
         x: LEFT_PADDING,
-        y: screen_height() - 90.0,
+        y: y_ui,
         w: 32.0,
         h: 32.0,
     };
-    let ui_rects = vec![label_button_rect];
+    let label_arch_rect = Rect {
+        x: label_button_rect.right() + LEFT_PADDING,
+        y: screen_height() - 90.0,
+        w: 96.0,
+        h: 32.0,
+    };
+    let ui_rects = vec![label_button_rect, label_arch_rect];
 
     loop {
         clear_background(BLACK);
@@ -108,9 +115,6 @@ async fn main() {
         if did_modify_datapoints {
             perceptron = Classifier2D::new(datapoints.clone(), perceptron.weights());
         } else if is_key_pressed(KeyCode::W) {
-            perceptron = make_perceptron(&datapoints, num_hidden_layers);
-        } else if is_key_pressed(KeyCode::L) {
-            num_hidden_layers = (num_hidden_layers + 1) % MAX_HIDDEN_LAYERS;
             perceptron = make_perceptron(&datapoints, num_hidden_layers);
         }
 
@@ -149,7 +153,7 @@ async fn main() {
 
         draw_text(
             &format!(
-                "Loss: {:0.4?} Acc: {}% LR: {:0.3} Spd: {updates_per_frame} HL: {num_hidden_layers} ({} params)",
+                "Loss: {:0.4?} Acc: {}% LR: {:0.3} Spd: {updates_per_frame} Params: {}",
                 perceptron.loss(),
                 (perceptron.accuracy() * 100.0).floor(),
                 learning_rate,
@@ -174,6 +178,16 @@ async fn main() {
                 Some(Label2D::Green) => Some(Label2D::Purple),
                 Some(Label2D::Purple) => None,
             };
+        }
+
+        if Button::at(label_arch_rect)
+            .with_text(get_layer_notation(num_hidden_layers), 20.0, WHITE)
+            .with_background(BLACK)
+            .clicked()
+            || is_key_pressed(KeyCode::L)
+        {
+            num_hidden_layers = (num_hidden_layers + 1) % MAX_HIDDEN_LAYERS;
+            perceptron = make_perceptron(&datapoints, num_hidden_layers);
         }
 
         if show_help {
@@ -231,6 +245,16 @@ fn modify_datapoint(
         }
     }
     false
+}
+
+fn get_layer_notation(num_hidden_layers: usize) -> &'static str {
+    if num_hidden_layers == 0 {
+        "2-1"
+    } else if num_hidden_layers == 1 {
+        "2-16-1"
+    } else {
+        "2-16-16-1"
+    }
 }
 
 fn make_perceptron(datapoints: &Vec<Datapoint2D>, num_hidden_layers: usize) -> Classifier2D {
