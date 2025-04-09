@@ -1,16 +1,16 @@
 use macroquad::prelude::*;
 
 #[derive(Default)]
-pub struct Button {
+pub struct Button<'a> {
     x: f32,
     y: f32,
     width: f32,
     height: f32,
     background: Color,
-    text: Option<(&'static str, f32, Color)>,
+    text: Option<(&'a str, f32, Color)>,
 }
 
-impl Button {
+impl<'a> Button<'a> {
     pub fn at(rect: Rect) -> Self {
         Button {
             x: rect.x,
@@ -26,7 +26,7 @@ impl Button {
         self
     }
 
-    pub fn with_text(mut self, text: &'static str, size: f32, color: Color) -> Self {
+    pub fn with_text(mut self, text: &'a str, size: f32, color: Color) -> Self {
         self.text = Some((text, size, color));
         self
     }
