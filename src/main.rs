@@ -96,12 +96,19 @@ async fn main() {
         w: 96.0,
         h: 32.0,
     };
+    let learning_speed_rect = Rect {
+        x: updates_per_frame_rect.right() + LEFT_PADDING,
+        y: y_ui,
+        w: 96.0,
+        h: 32.0,
+    };
+
     // Make the whole UI bounds have padding around it so stray touches/clicks
     // intended for the UI don't paint the canvas.
     let whole_ui_bounds = Rect {
         x: 0.0,
         y: y_ui,
-        w: updates_per_frame_rect.right() + LEFT_PADDING * 4.0,
+        w: learning_speed_rect.right() + LEFT_PADDING * 4.0,
         h: 32.0,
     };
 
@@ -180,12 +187,23 @@ async fn main() {
                 GRAY,
             ) as i32;
 
+        let learning_speed_text = format!("LR: {learning_rate:0.2}");
+        learning_speed = Button::at(learning_speed_rect)
+            .with_background(BLACK)
+            .with_text(&learning_speed_text, 20.0, WHITE)
+            .slider_value(
+                MIN_LEARN_SPEED as f32,
+                MAX_LEARN_SPEED as f32,
+                1.0,
+                learning_speed as f32,
+                GRAY,
+            ) as i32;
+
         draw_text(
             &format!(
-                "Loss: {:0.4?} Acc: {}% LR: {:0.3} Params: {}",
+                "Loss: {:0.4?} Acc: {}% Params: {}",
                 perceptron.loss(),
                 (perceptron.accuracy() * 100.0).floor(),
-                learning_rate,
                 perceptron.num_params()
             ),
             LEFT_PADDING,
