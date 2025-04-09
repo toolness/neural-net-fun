@@ -90,7 +90,14 @@ async fn main() {
         w: 96.0,
         h: 32.0,
     };
-    let ui_rects = vec![label_button_rect, label_arch_rect, updates_per_frame_rect];
+    // Make the whole UI bounds have padding around it so stray touches/clicks
+    // intended for the UI don't paint the canvas.
+    let whole_ui_bounds = Rect {
+        x: 0.0,
+        y: y_ui,
+        w: updates_per_frame_rect.right() + LEFT_PADDING * 4.0,
+        h: 32.0,
+    };
 
     loop {
         clear_background(BLACK);
@@ -99,9 +106,7 @@ async fn main() {
         let mouse_f32 = plot.from_screen_point(raw_mouse_pos);
         let mouse = (mouse_f32.0.round() as i32, mouse_f32.1.round() as i32);
 
-        let is_mouse_outside_ui = ui_rects
-            .iter()
-            .all(|rect| !rect.contains(raw_mouse_pos.into()));
+        let is_mouse_outside_ui = !whole_ui_bounds.contains(raw_mouse_pos.into());
 
         let did_modify_datapoints = if is_mouse_outside_ui && is_key_down(KeyCode::Key1) {
             modify_datapoint(&mut datapoints, mouse, Some(Label2D::Green))
