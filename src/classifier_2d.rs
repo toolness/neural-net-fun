@@ -15,8 +15,8 @@ const POINT_SCALE: f64 = 30.0;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Label2D {
-    Purple,
-    Green,
+    Blue,
+    Red,
 }
 
 impl From<Label2D> for f64 {
@@ -26,8 +26,8 @@ impl From<Label2D> for f64 {
     /// label.
     fn from(value: Label2D) -> Self {
         match value {
-            Label2D::Green => 1.0,
-            Label2D::Purple => 0.0,
+            Label2D::Red => 1.0,
+            Label2D::Blue => 0.0,
         }
     }
 }
@@ -37,12 +37,17 @@ impl From<f64> for Label2D {
     /// closest appropriate label for it.
     fn from(value: f64) -> Self {
         if value <= 0.5 {
-            Label2D::Purple
+            Label2D::Blue
         } else {
-            Label2D::Green
+            Label2D::Red
         }
     }
 }
+
+const LIGHT_RED: Color = Color::new(1.0, 0.3333333333333333, 0.3333333333333333, 1.0);
+const RED: Color = Color::new(0.6666666666666666, 0.0, 0.0, 1.0);
+const LIGHT_BLUE: Color = Color::new(0.3333333333333333, 0.3333333333333333, 1.0, 1.0);
+const BLUE: Color = Color::new(0.0, 0.0, 0.6666666666666666, 1.0);
 
 impl Label2D {
     fn as_f64(&self) -> f64 {
@@ -51,8 +56,8 @@ impl Label2D {
 
     pub fn color(&self) -> Color {
         match self {
-            Label2D::Green => GREEN,
-            Label2D::Purple => PURPLE,
+            Label2D::Red => LIGHT_RED,
+            Label2D::Blue => LIGHT_BLUE,
         }
     }
 
@@ -63,12 +68,12 @@ impl Label2D {
     fn dark_color(value: f64, enable_shading: bool) -> Color {
         let label: Label2D = value.into();
         match label {
-            Label2D::Purple => VIOLET.with_alpha(if enable_shading {
+            Label2D::Blue => BLUE.with_alpha(if enable_shading {
                 1.0 - value as f32 * 2.0
             } else {
                 1.0
             }),
-            Label2D::Green => DARKGREEN.with_alpha(if enable_shading {
+            Label2D::Red => RED.with_alpha(if enable_shading {
                 (value as f32 - 0.5) * 2.0
             } else {
                 1.0

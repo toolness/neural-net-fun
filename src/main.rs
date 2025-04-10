@@ -47,8 +47,8 @@ H - Toggle help
 ] - Increase updates per frame
 , - Decrease learning rate
 . - Increase learning rate
-1 - Paint green datapoint (at mouse cursor)
-2 - Paint purple datapoint (at mouse cursor)
+1 - Paint red datapoint (at mouse cursor)
+2 - Paint blue datapoint (at mouse cursor)
 X - Delete datapoint (at mouse cursor)
 L - Cycle number of hidden layers (16 neurons per layer)
 C - Clear all datapoints
@@ -61,10 +61,10 @@ async fn main() {
     run_smoke_test();
 
     let mut datapoints = vec![
-        Datapoint2D::new((-10, 9), Label2D::Green),
-        Datapoint2D::new((8, 8), Label2D::Green),
-        Datapoint2D::new((-5, -5), Label2D::Purple),
-        Datapoint2D::new((9, -10), Label2D::Purple),
+        Datapoint2D::new((-10, 9), Label2D::Red),
+        Datapoint2D::new((8, 8), Label2D::Red),
+        Datapoint2D::new((-5, -5), Label2D::Blue),
+        Datapoint2D::new((9, -10), Label2D::Blue),
     ];
     let mut num_hidden_layers = 0;
     let mut perceptron = make_perceptron(&datapoints, num_hidden_layers);
@@ -74,7 +74,7 @@ async fn main() {
     let mut enable_shading = false;
     let mut show_help = false;
     let mut learning_speed = 2;
-    let mut current_brush: Option<Label2D> = Some(Label2D::Green);
+    let mut current_brush: Option<Label2D> = Some(Label2D::Red);
     let help_lines: Vec<&'static str> = HELP_TEXT.split('\n').collect();
 
     let y_ui = screen_height() - 90.0;
@@ -122,9 +122,9 @@ async fn main() {
         let is_mouse_outside_ui = !whole_ui_bounds.contains(raw_mouse_pos.into());
 
         let did_modify_datapoints = if is_mouse_outside_ui && is_key_down(KeyCode::Key1) {
-            modify_datapoint(&mut datapoints, mouse, Some(Label2D::Green))
+            modify_datapoint(&mut datapoints, mouse, Some(Label2D::Red))
         } else if is_mouse_outside_ui && is_key_down(KeyCode::Key2) {
-            modify_datapoint(&mut datapoints, mouse, Some(Label2D::Purple))
+            modify_datapoint(&mut datapoints, mouse, Some(Label2D::Blue))
         } else if is_mouse_outside_ui && is_key_down(KeyCode::X) {
             modify_datapoint(&mut datapoints, mouse, None)
         } else if is_mouse_outside_ui && is_mouse_button_down(MouseButton::Left) {
@@ -221,9 +221,9 @@ async fn main() {
             .clicked()
         {
             current_brush = match current_brush {
-                None => Some(Label2D::Green),
-                Some(Label2D::Green) => Some(Label2D::Purple),
-                Some(Label2D::Purple) => None,
+                None => Some(Label2D::Red),
+                Some(Label2D::Red) => Some(Label2D::Blue),
+                Some(Label2D::Blue) => None,
             };
         }
 
