@@ -26,8 +26,8 @@ impl From<Label2D> for f64 {
     /// label.
     fn from(value: Label2D) -> Self {
         match value {
-            Label2D::Red => 1.0,
             Label2D::Blue => 0.0,
+            Label2D::Red => 1.0,
         }
     }
 }
@@ -56,8 +56,8 @@ impl Label2D {
 
     pub fn color(&self) -> Color {
         match self {
-            Label2D::Red => LIGHT_RED,
             Label2D::Blue => LIGHT_BLUE,
+            Label2D::Red => LIGHT_RED,
         }
     }
 
