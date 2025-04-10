@@ -208,7 +208,7 @@ async fn main() {
             ),
             LEFT_PADDING,
             screen_height() - 30.0,
-            30.0,
+            25.0,
             WHITE,
         );
 
