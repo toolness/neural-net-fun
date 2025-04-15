@@ -43,13 +43,9 @@ impl<'a> Button<'a> {
             let metrics =
                 CUSTOM_FONT.with_borrow(|font| measure_text(text, Some(font), size as u16, 1.0));
             let (center_x, center_y) = (self.x + (self.width / 2.0), self.y + (self.height / 2.0));
-            draw_custom_text(
-                text,
-                center_x - metrics.width / 2.0,
-                center_y - metrics.height / 2.0 + metrics.offset_y,
-                size,
-                color,
-            );
+            let x = (center_x - metrics.width / 2.0).floor();
+            let y = (center_y - metrics.height / 2.0 + metrics.offset_y).floor();
+            draw_custom_text(text, x, y, size, color);
         }
     }
 
