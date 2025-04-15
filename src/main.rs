@@ -2,9 +2,11 @@ mod button;
 mod classifier_2d;
 mod engine;
 mod plot;
+mod text;
 mod value;
 
 use button::Button;
+use text::draw_fira_text;
 use value::Value;
 
 use macroquad::prelude::*;
@@ -39,6 +41,12 @@ const NEURONS_PER_LAYER: usize = 16;
 
 /// Maximum number of times we'll make the neural net learn per frame.
 const MAX_UPDATES_PER_FRAME: i32 = 10;
+
+const BUTTON_FONT_SIZE: u16 = 14;
+
+const HELP_FONT_SIZE: u16 = 20;
+
+const STATUS_FONT_SIZE: u16 = 18;
 
 const HELP_TEXT: &'static str = r#"Help
 
@@ -187,7 +195,7 @@ async fn main() {
         let updates_per_frame_text = format!("Speed: {updates_per_frame}");
         updates_per_frame = Button::at(updates_per_frame_rect)
             .with_background(BLACK)
-            .with_text(&updates_per_frame_text, 20.0, WHITE)
+            .with_text(&updates_per_frame_text, BUTTON_FONT_SIZE, WHITE)
             .slider_value(
                 0.0,
                 MAX_UPDATES_PER_FRAME as f32,
@@ -199,7 +207,7 @@ async fn main() {
         let learning_speed_text = format!("LR: {learning_rate:0.2}");
         learning_speed = Button::at(learning_speed_rect)
             .with_background(BLACK)
-            .with_text(&learning_speed_text, 20.0, WHITE)
+            .with_text(&learning_speed_text, BUTTON_FONT_SIZE, WHITE)
             .slider_value(
                 MIN_LEARN_SPEED as f32,
                 MAX_LEARN_SPEED as f32,
@@ -208,7 +216,7 @@ async fn main() {
                 GRAY,
             ) as i32;
 
-        draw_text(
+        draw_fira_text(
             &format!(
                 "Loss: {:0.4?} Acc: {}% Params: {}",
                 perceptron.loss(),
@@ -217,7 +225,7 @@ async fn main() {
             ),
             LEFT_PADDING,
             screen_height() - 30.0,
-            25.0,
+            STATUS_FONT_SIZE,
             WHITE,
         );
 
@@ -237,7 +245,11 @@ async fn main() {
         }
 
         if Button::at(label_arch_rect)
-            .with_text(get_layer_notation(num_hidden_layers), 20.0, WHITE)
+            .with_text(
+                get_layer_notation(num_hidden_layers),
+                BUTTON_FONT_SIZE,
+                WHITE,
+            )
             .with_background(BLACK)
             .clicked()
             || is_key_pressed(KeyCode::L)
@@ -247,7 +259,7 @@ async fn main() {
         }
 
         if Button::at(clear_rect)
-            .with_text("C", 20.0, WHITE)
+            .with_text("C", BUTTON_FONT_SIZE, WHITE)
             .with_background(BLACK)
             .clicked()
         {
@@ -256,16 +268,22 @@ async fn main() {
 
         if show_help {
             for (index, line) in help_lines.iter().enumerate() {
-                draw_text(
+                draw_fira_text(
                     line,
                     LEFT_PADDING,
                     30.0 + (index as f32 * 30.0),
-                    30.0,
+                    HELP_FONT_SIZE,
                     WHITE,
                 );
             }
         } else {
-            draw_text("Press H for help.", LEFT_PADDING, 30.0, 30.0, WHITE);
+            draw_fira_text(
+                "Press H for help.",
+                LEFT_PADDING,
+                30.0,
+                HELP_FONT_SIZE,
+                WHITE,
+            );
         }
 
         next_frame().await;
