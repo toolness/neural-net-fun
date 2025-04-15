@@ -6,7 +6,7 @@ mod text;
 mod value;
 
 use button::Button;
-use text::draw_fira_text;
+use text::draw_custom_text;
 use value::Value;
 
 use macroquad::prelude::*;
@@ -216,7 +216,7 @@ async fn main() {
                 GRAY,
             ) as i32;
 
-        draw_fira_text(
+        draw_custom_text(
             &format!(
                 "Loss: {:0.4?} Acc: {}% Params: {}",
                 perceptron.loss(),
@@ -268,7 +268,7 @@ async fn main() {
 
         if show_help {
             for (index, line) in help_lines.iter().enumerate() {
-                draw_fira_text(
+                draw_custom_text(
                     line,
                     LEFT_PADDING,
                     30.0 + (index as f32 * 30.0),
@@ -277,7 +277,7 @@ async fn main() {
                 );
             }
         } else {
-            draw_fira_text(
+            draw_custom_text(
                 "Press H for help.",
                 LEFT_PADDING,
                 30.0,
