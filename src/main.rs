@@ -102,15 +102,23 @@ async fn main() {
         w: 96.0,
         h: 32.0,
     };
+    let clear_rect = Rect {
+        x: learning_speed_rect.right() + LEFT_PADDING,
+        y: y_ui,
+        w: 32.0,
+        h: 32.0,
+    };
 
     // Make the whole UI bounds have padding around it so stray touches/clicks
     // intended for the UI don't paint the canvas.
     let whole_ui_bounds = Rect {
         x: 0.0,
         y: y_ui,
-        w: learning_speed_rect.right() + LEFT_PADDING * 4.0,
+        w: clear_rect.right() + LEFT_PADDING * 4.0,
         h: 32.0,
     };
+
+    let mut did_click_clear_button = false;
 
     loop {
         clear_background(BLACK);
@@ -129,8 +137,9 @@ async fn main() {
             modify_datapoint(&mut datapoints, mouse, None)
         } else if is_mouse_outside_ui && is_mouse_button_down(MouseButton::Left) {
             modify_datapoint(&mut datapoints, mouse, current_brush)
-        } else if is_key_pressed(KeyCode::C) {
+        } else if is_key_pressed(KeyCode::C) || did_click_clear_button {
             datapoints = vec![];
+            did_click_clear_button = false;
             true
         } else {
             false
@@ -235,6 +244,14 @@ async fn main() {
         {
             num_hidden_layers = (num_hidden_layers + 1) % MAX_HIDDEN_LAYERS;
             perceptron = make_perceptron(&datapoints, num_hidden_layers);
+        }
+
+        if Button::at(clear_rect)
+            .with_text("C", 20.0, WHITE)
+            .with_background(BLACK)
+            .clicked()
+        {
+            did_click_clear_button = true;
         }
 
         if show_help {
