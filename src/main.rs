@@ -35,7 +35,7 @@ const MAX_HIDDEN_LAYERS: usize = 3;
 
 /// Number of neuron in each hidden layer of the multi-layer perceptron.
 ///
-/// This is mentioned in `HELP_TEXT` and `get_layer_notation` below, so if
+/// This is mentioned in `get_layer_notation` below, so if
 /// you change it here, change it there too.
 const NEURONS_PER_LAYER: usize = 16;
 
@@ -58,7 +58,7 @@ H - Toggle help
 1 - Paint blue datapoint (at mouse cursor)
 2 - Paint red datapoint (at mouse cursor)
 X - Delete datapoint (at mouse cursor)
-L - Cycle number of hidden layers (16 neurons per layer)
+L - Cycle number of hidden layers
 C - Clear all datapoints
 W - Reset weights
 S - Toggle point mesh shading
