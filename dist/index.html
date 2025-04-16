@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Neural Net Fun</title>
     <style>
+        @font-face {
+            font-family: 'JetBrains Mono';
+            src: url('JetBrainsMono-Medium.ttf') format('truetype');
+            font-weight: 500; /* Medium weight */
+            font-style: normal;
+        }
+
         html,
         body,
         canvas {
@@ -16,6 +23,7 @@
             position: absolute;
             background: black;
             z-index: 0;
+            font-family: 'JetBrains Mono';
 
             /**
              * Not sure wich browsers support which of these values, but
@@ -30,18 +38,14 @@
             display: block;
             text-decoration: none;
             text-align: right;
-            color: gray;
-            font-size: 1em;
+            color: white;
+            font-size: 0.8em;
             position: absolute;
-            top: 4px;
-            right: 4px;
+            top: 8px;
+            right: 8px;
             background: black;
             padding: 4px;
-            border: 1px solid gray;
-        }
-
-        #learn-more:hover {
-            text-decoration: underline;
+            border: 1px solid white;
         }
     </style>
 </head>

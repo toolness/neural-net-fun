@@ -3,7 +3,10 @@ use std::cell::RefCell;
 use macroquad::prelude::*;
 
 thread_local! {
-    pub static CUSTOM_FONT: RefCell<Font> = RefCell::new(load_ttf_font_from_bytes(include_bytes!("../JetBrainsMono-Medium.ttf")).unwrap());
+    // This is annoying b/c we're actually including this TTF file *twice* in the
+    // web version: once in CSS, and again in the binary here. But whatever, this
+    // is just a goofy prototype.
+    pub static CUSTOM_FONT: RefCell<Font> = RefCell::new(load_ttf_font_from_bytes(include_bytes!("../dist/JetBrainsMono-Medium.ttf")).unwrap());
 }
 
 pub fn draw_custom_text(
