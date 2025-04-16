@@ -93,7 +93,9 @@ async fn main() {
     let mut should_fade_help = false;
 
     loop {
-        let y_ui = screen_height() - 90.0;
+        let y_ui = screen_height() - 65.0;
+        let y_stats = y_ui + 55.0;
+
         let label_button_rect = Rect {
             x: LEFT_PADDING,
             y: y_ui,
@@ -229,7 +231,7 @@ async fn main() {
                 perceptron.num_params()
             ),
             LEFT_PADDING,
-            screen_height() - 30.0,
+            y_stats,
             STATUS_FONT_SIZE,
             WHITE,
         );
