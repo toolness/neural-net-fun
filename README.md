@@ -8,6 +8,8 @@ his [lecture](https://www.youtube.com/watch?v=VMj-3S1tku0).
 
 You can access the web version at [toolness.github.io/neural-net-fun/](https://toolness.github.io/neural-net-fun/).
 
+You can also follow a tutorial I wrote for it at [Atul’s Neural Net Fun Tutorial](https://www.notion.so/toolness/Atul-s-Neural-Net-Fun-Tutorial-1d70b5d6dd618030ba68e60c8180ddd3?pvs=4).
+
 [micrograd]: https://github.com/karpathy/micrograd
 
 ## Quick start
