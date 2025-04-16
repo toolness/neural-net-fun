@@ -42,6 +42,9 @@ const NEURONS_PER_LAYER: usize = 16;
 /// Maximum number of times we'll make the neural net learn per frame.
 const MAX_UPDATES_PER_FRAME: i32 = 10;
 
+// Length of the fade-out of the intro help message, in seconds.
+const HELP_ALPHA_FADE_SECS: f32 = 1.0;
+
 const BUTTON_FONT_SIZE: u16 = 14;
 
 const HELP_FONT_SIZE: u16 = 20;
@@ -127,6 +130,8 @@ async fn main() {
     };
 
     let mut did_click_clear_button = false;
+    let mut help_alpha_time_left = HELP_ALPHA_FADE_SECS;
+    let mut should_fade_help = false;
 
     loop {
         clear_background(BLACK);
@@ -282,8 +287,19 @@ async fn main() {
                 LEFT_PADDING,
                 30.0,
                 HELP_FONT_SIZE,
-                WHITE,
+                WHITE.with_alpha(help_alpha_time_left / HELP_ALPHA_FADE_SECS),
             );
+        }
+
+        if should_fade_help {
+            help_alpha_time_left -= get_frame_time();
+            if help_alpha_time_left < 0.0 {
+                help_alpha_time_left = 0.0;
+            }
+        } else if mouse_delta_position().length_squared() > 0.0
+            || is_mouse_button_down(MouseButton::Left)
+        {
+            should_fade_help = true;
         }
 
         next_frame().await;
