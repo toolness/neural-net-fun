@@ -88,52 +88,52 @@ async fn main() {
     let mut current_brush: Option<Label2D> = Some(Label2D::Blue);
     let help_lines: Vec<&'static str> = HELP_TEXT.split('\n').collect();
 
-    let y_ui = screen_height() - 90.0;
-    let label_button_rect = Rect {
-        x: LEFT_PADDING,
-        y: y_ui,
-        w: 32.0,
-        h: 32.0,
-    };
-    let label_arch_rect = Rect {
-        x: label_button_rect.right() + LEFT_PADDING,
-        y: y_ui,
-        w: 96.0,
-        h: 32.0,
-    };
-    let updates_per_frame_rect = Rect {
-        x: label_arch_rect.right() + LEFT_PADDING,
-        y: y_ui,
-        w: 96.0,
-        h: 32.0,
-    };
-    let learning_speed_rect = Rect {
-        x: updates_per_frame_rect.right() + LEFT_PADDING,
-        y: y_ui,
-        w: 96.0,
-        h: 32.0,
-    };
-    let clear_rect = Rect {
-        x: learning_speed_rect.right() + LEFT_PADDING,
-        y: y_ui,
-        w: 32.0,
-        h: 32.0,
-    };
-
-    // Make the whole UI bounds have padding around it so stray touches/clicks
-    // intended for the UI don't paint the canvas.
-    let whole_ui_bounds = Rect {
-        x: 0.0,
-        y: y_ui,
-        w: clear_rect.right() + LEFT_PADDING * 4.0,
-        h: 32.0,
-    };
-
     let mut did_click_clear_button = false;
     let mut help_alpha_time_left = HELP_ALPHA_FADE_SECS;
     let mut should_fade_help = false;
 
     loop {
+        let y_ui = screen_height() - 90.0;
+        let label_button_rect = Rect {
+            x: LEFT_PADDING,
+            y: y_ui,
+            w: 32.0,
+            h: 32.0,
+        };
+        let label_arch_rect = Rect {
+            x: label_button_rect.right() + LEFT_PADDING,
+            y: y_ui,
+            w: 96.0,
+            h: 32.0,
+        };
+        let updates_per_frame_rect = Rect {
+            x: label_arch_rect.right() + LEFT_PADDING,
+            y: y_ui,
+            w: 96.0,
+            h: 32.0,
+        };
+        let learning_speed_rect = Rect {
+            x: updates_per_frame_rect.right() + LEFT_PADDING,
+            y: y_ui,
+            w: 96.0,
+            h: 32.0,
+        };
+        let clear_rect = Rect {
+            x: learning_speed_rect.right() + LEFT_PADDING,
+            y: y_ui,
+            w: 32.0,
+            h: 32.0,
+        };
+
+        // Make the whole UI bounds have padding around it so stray touches/clicks
+        // intended for the UI don't paint the canvas.
+        let whole_ui_bounds = Rect {
+            x: 0.0,
+            y: y_ui,
+            w: clear_rect.right() + LEFT_PADDING * 4.0,
+            h: 32.0,
+        };
+
         clear_background(BLACK);
 
         let raw_mouse_pos = mouse_position();
