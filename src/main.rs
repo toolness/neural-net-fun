@@ -14,6 +14,11 @@ use macroquad::prelude::*;
 use classifier_2d::{Classifier2D, Datapoint2D, Label2D, Weights2D};
 use plot::Plot;
 
+#[cfg(target_arch = "wasm32")]
+unsafe extern "C" {
+    fn open_website();
+}
+
 /// Each point on the plot is scaled by this many screen pixels.
 const PLOT_SCALE: f32 = 8.0;
 
@@ -116,10 +121,16 @@ async fn main() {
         w: 32.0,
         h: 32.0,
     };
+    let learn_more_rect = Rect {
+        x: screen_width() - 96.0 - LEFT_PADDING,
+        y: LEFT_PADDING,
+        w: 96.0,
+        h: 32.0,
+    };
 
     // Make the whole UI bounds have padding around it so stray touches/clicks
     // intended for the UI don't paint the canvas.
-    let whole_ui_bounds = Rect {
+    let bottom_ui_bounds = Rect {
         x: 0.0,
         y: y_ui,
         w: clear_rect.right() + LEFT_PADDING * 4.0,
@@ -135,7 +146,8 @@ async fn main() {
         let mouse_f32 = plot.from_screen_point(raw_mouse_pos);
         let mouse = (mouse_f32.0.round() as i32, mouse_f32.1.round() as i32);
 
-        let is_mouse_outside_ui = !whole_ui_bounds.contains(raw_mouse_pos.into());
+        let is_mouse_outside_ui = !bottom_ui_bounds.contains(raw_mouse_pos.into())
+            && !learn_more_rect.contains(raw_mouse_pos.into());
 
         let did_modify_datapoints = if is_mouse_outside_ui && is_key_down(KeyCode::Key1) {
             modify_datapoint(&mut datapoints, mouse, Some(Label2D::Blue))
@@ -264,6 +276,17 @@ async fn main() {
             .clicked()
         {
             did_click_clear_button = true;
+        }
+
+        #[cfg(target_arch = "wasm32")]
+        if Button::at(learn_more_rect)
+            .with_text("Learn more", BUTTON_FONT_SIZE, WHITE)
+            .with_background(BLACK)
+            .clicked()
+        {
+            unsafe {
+                open_website();
+            }
         }
 
         if show_help {
