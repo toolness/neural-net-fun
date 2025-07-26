@@ -1,0 +1,23 @@
+[package]
+name = "cargo-quad-apk"
+version = "0.1.4"
+authors = ["Pierre Krieger <pierre.krieger1708@gmail.com>", "Philip Alldredge <philip@philipalldredge.com>", "Fedor Logachev <not.fl3@gmail.com>"]
+license = "MIT"
+description = "Cargo subcommand that allows you to build Android packages"
+repository = "https://github.com/not-fl3/cargo-quad-apk"
+edition = "2018"
+
+[dependencies]
+cargo = "0.87"
+cargo-util = "0.2.9"
+clap = "4.5.4"
+itertools = "0.8.2"
+dirs = "2.0.2"
+anyhow = "1.0"
+multimap = "0.8.0"
+serde = "1.0.104"
+toml = "0.5.5"
+glob = "0.3"
+
+[dev-dependencies]
+assert_cmd = "0.12.0"
