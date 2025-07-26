@@ -1,3 +1,4 @@
 /target
 /dist/neural-net-fun.wasm
 /node_modules
+/docker-tmp

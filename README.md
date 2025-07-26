@@ -36,6 +36,14 @@ root of the `dist` directory and visit it.
 
 You can deploy the web version with `npm run deploy`.
 
+## Android version
+
+This is super experimental. You'll need Docker.
+
+```
+docker-compose run app ./build-android.sh
+```
+
 ## Related resources
 
 - See also [perceptron-fun], my interactive lab for

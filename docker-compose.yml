@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  app:
+    build: ./cargo-quad-apk
+    volumes:
+      - .:/root/src
+      - ./cargo-quad-apk:/root/cargo-apk
+      - ./docker-tmp/registry:/usr/local/cargo/registry
