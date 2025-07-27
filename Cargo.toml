@@ -11,6 +11,16 @@ rayon = "1.10.0"
 "android:exported" =  "true"
 
 [package.metadata.android]
+# Note that if passing this to adb, it seems you have to
+# replace the dashes with underscores?? e.g.
+#
+#   adb uninstall com.toolness.neural_net_fun
+#
+# Also, I can't actually rename it to anything else or
+# else the app crashes on startup?? ARGH I hate Android
+# development...
+package_name = "com.toolness.neural-net-fun"
+
 # This is just my Android architecture, which makes
 # debugging fast. Remove this line to build all
 # Android architectures.
