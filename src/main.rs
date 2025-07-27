@@ -336,18 +336,18 @@ fn modify_datapoint(
     if let Some(label) = label {
         if let Some(dp) = datapoints.iter_mut().find(|dp| dp.pos == point) {
             if dp.label != label {
-                println!("Changing label of {point:?} to {label:?}.");
+                info!("Changing label of {:?} to {:?}.", point, label);
                 dp.label = label;
                 return true;
             }
         } else {
-            println!("Adding datapoint at {point:?} with label {label:?}.");
+            info!("Adding datapoint at {:?} with label {:?}.", point, label);
             datapoints.push(Datapoint2D::new(point, label));
             return true;
         }
     } else {
         if let Some(pos) = datapoints.iter().position(|dp| dp.pos == point) {
-            println!("Removing datapoint at {point:?}.");
+            info!("Removing datapoint at {:?}.", point);
             datapoints.remove(pos);
             return true;
         }
