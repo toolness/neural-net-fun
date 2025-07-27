@@ -44,8 +44,8 @@ This is super experimental. You'll need Docker.
 sh build-android.sh
 ```
 
-This will build the app *and* attempt to install it into
-the local android device via `adb`.
+This will build the app, attempt to install it into
+the local android device, and run it via `adb`.
 
 ## Related resources
 

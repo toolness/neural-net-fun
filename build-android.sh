@@ -7,3 +7,10 @@ docker-compose run --rm app cargo quad-apk build --release
 adb uninstall com.toolness.neural_net_fun
 
 adb install target/android-artifacts/release/apk/neural-net-fun.apk
+
+adb shell am force-stop com.toolness.neural_net_fun
+
+# Clear the logs.
+adb logcat -c
+
+adb shell am start -n com.toolness.neural_net_fun/.MainActivity
