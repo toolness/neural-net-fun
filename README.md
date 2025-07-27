@@ -49,6 +49,13 @@ the local android device, and run it via `adb`.
 
 For details on how to debug, see [this Macroquad article](https://macroquad.rs/articles/android/#debug-logs).
 
+One of the most useful debugging commands is this, which will
+display all macroquad `debug!`, `info!`, and `warn!` messages:
+
+```
+adb logcat -v brief SAPP:V "*:S"
+```
+
 ## Related resources
 
 - See also [perceptron-fun], my interactive lab for
