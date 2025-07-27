@@ -43,13 +43,13 @@ RUN rustup target add i686-linux-android
 RUN rustup target add x86_64-linux-android
 
 # Copy contents to container. Should only use this on a clean directory
-#COPY . /root/cargo-apk
+COPY . /root/cargo-apk
 
 # Install binary
-#RUN cargo install --path /root/cargo-apk
+RUN cargo install --path /root/cargo-apk
 
 # Remove source and build files
-#RUN rm -rf /root/cargo-apk
+RUN rm -rf /root/cargo-apk
 
 # Add build-tools to PATH, for apksigner
 ENV PATH="/opt/android-sdk-linux/build-tools/36.0.0-rc5/:${PATH}"
