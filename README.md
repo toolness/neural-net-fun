@@ -41,8 +41,11 @@ You can deploy the web version with `npm run deploy`.
 This is super experimental. You'll need Docker.
 
 ```
-docker-compose run app ./build-android.sh
+sh build-android.sh
 ```
+
+This will build the app *and* attempt to install it into
+the local android device via `adb`.
 
 ## Related resources
 
