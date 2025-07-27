@@ -9,3 +9,9 @@ rayon = "1.10.0"
 
 [package.metadata.android.activity_attributes]
 "android:exported" =  "true"
+
+[package.metadata.android]
+# This is just my Android architecture, which makes
+# debugging fast. Remove this line to build all
+# Android architectures.
+build_targets = [ "aarch64-linux-android" ]
