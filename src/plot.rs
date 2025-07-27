@@ -74,6 +74,6 @@ impl Plot {
     }
 
     pub fn draw_point(&self, x: f32, y: f32, color: Color) {
-        draw_circle(self.screen_x(x), self.screen_y(y), 1.0, color);
+        draw_circle(self.screen_x(x), self.screen_y(y), px(1.0), color);
     }
 }
