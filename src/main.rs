@@ -9,7 +9,7 @@ use button::Button;
 use text::draw_custom_text;
 use value::Value;
 
-use macroquad::prelude::*;
+use macroquad::{prelude::*, window};
 
 use classifier_2d::{Classifier2D, Datapoint2D, Label2D, Weights2D};
 use plot::Plot;
@@ -67,7 +67,15 @@ W - Reset weights
 S - Toggle point mesh shading
 "#;
 
-#[macroquad::main("Neural Net Fun")]
+fn window_conf() -> window::Conf {
+    window::Conf {
+        window_title: "Neural Net Fun".to_owned(),
+        high_dpi: true,
+        ..Default::default()
+    }
+}
+
+#[macroquad::main(window_conf)]
 async fn main() {
     run_smoke_test();
 
