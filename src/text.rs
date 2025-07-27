@@ -2,6 +2,8 @@ use std::cell::RefCell;
 
 use macroquad::prelude::*;
 
+use crate::zoom::font_scale;
+
 thread_local! {
     // This is annoying b/c we're actually including this TTF file *twice* in the
     // web version: once in CSS, and again in the binary here. But whatever, this
@@ -24,7 +26,7 @@ pub fn draw_custom_text(
             TextParams {
                 font: Some(font),
                 font_size,
-                font_scale: 1.0,
+                font_scale: font_scale(),
                 color,
                 ..Default::default()
             },

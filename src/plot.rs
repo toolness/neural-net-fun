@@ -1,5 +1,7 @@
 use macroquad::prelude::*;
 
+use crate::zoom::px;
+
 pub struct Plot {
     scale: f32,
 }
@@ -18,17 +20,17 @@ impl Plot {
     }
 
     fn screen_x(&self, x: f32) -> f32 {
-        self.origin_x() + x * self.scale
+        self.origin_x() + x * px(self.scale)
     }
 
     fn screen_y(&self, y: f32) -> f32 {
-        self.origin_y() + y * -self.scale
+        self.origin_y() + y * -px(self.scale)
     }
 
     pub fn from_screen_point(&self, (x, y): (f32, f32)) -> (f32, f32) {
         (
-            (x - self.origin_x()) / self.scale,
-            (y - self.origin_y()) / -self.scale,
+            (x - self.origin_x()) / px(self.scale),
+            (y - self.origin_y()) / -px(self.scale),
         )
     }
 
@@ -63,7 +65,12 @@ impl Plot {
     }
 
     pub fn draw_circle(&self, x: f32, y: f32, r: f32, color: Color) {
-        draw_circle(self.screen_x(x), self.screen_y(y), r * self.scale, color);
+        draw_circle(
+            self.screen_x(x),
+            self.screen_y(y),
+            r * px(self.scale),
+            color,
+        );
     }
 
     pub fn draw_point(&self, x: f32, y: f32, color: Color) {

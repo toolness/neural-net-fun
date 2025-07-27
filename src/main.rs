@@ -4,6 +4,7 @@ mod engine;
 mod plot;
 mod text;
 mod value;
+mod zoom;
 
 use button::Button;
 use text::draw_custom_text;
@@ -13,6 +14,8 @@ use macroquad::{prelude::*, window};
 
 use classifier_2d::{Classifier2D, Datapoint2D, Label2D, Weights2D};
 use plot::Plot;
+
+use crate::zoom::px;
 
 /// Each point on the plot is scaled by this many screen pixels.
 const PLOT_SCALE: f32 = 8.0;
@@ -101,38 +104,38 @@ async fn main() {
     let mut should_fade_help = false;
 
     loop {
-        let y_ui = screen_height() - 65.0;
-        let y_stats = y_ui + 55.0;
+        let y_ui = screen_height() - px(65.0);
+        let y_stats = y_ui + px(55.0);
 
         let label_button_rect = Rect {
-            x: LEFT_PADDING,
+            x: px(LEFT_PADDING),
             y: y_ui,
-            w: 32.0,
-            h: 32.0,
+            w: px(32.0),
+            h: px(32.0),
         };
         let label_arch_rect = Rect {
-            x: label_button_rect.right() + LEFT_PADDING,
+            x: label_button_rect.right() + px(LEFT_PADDING),
             y: y_ui,
-            w: 96.0,
-            h: 32.0,
+            w: px(96.0),
+            h: px(32.0),
         };
         let updates_per_frame_rect = Rect {
-            x: label_arch_rect.right() + LEFT_PADDING,
+            x: label_arch_rect.right() + px(LEFT_PADDING),
             y: y_ui,
-            w: 96.0,
-            h: 32.0,
+            w: px(96.0),
+            h: px(32.0),
         };
         let learning_speed_rect = Rect {
-            x: updates_per_frame_rect.right() + LEFT_PADDING,
+            x: updates_per_frame_rect.right() + px(LEFT_PADDING),
             y: y_ui,
-            w: 96.0,
-            h: 32.0,
+            w: px(96.0),
+            h: px(32.0),
         };
         let clear_rect = Rect {
-            x: learning_speed_rect.right() + LEFT_PADDING,
+            x: learning_speed_rect.right() + px(LEFT_PADDING),
             y: y_ui,
-            w: 32.0,
-            h: 32.0,
+            w: px(32.0),
+            h: px(32.0),
         };
 
         // Make the whole UI bounds have padding around it so stray touches/clicks
@@ -140,8 +143,8 @@ async fn main() {
         let whole_ui_bounds = Rect {
             x: 0.0,
             y: y_ui,
-            w: clear_rect.right() + LEFT_PADDING * 4.0,
-            h: 32.0,
+            w: clear_rect.right() + px(LEFT_PADDING) * 4.0,
+            h: px(32.0),
         };
 
         clear_background(BLACK);
@@ -238,7 +241,7 @@ async fn main() {
                 (perceptron.accuracy() * 100.0).floor(),
                 perceptron.num_params()
             ),
-            LEFT_PADDING,
+            px(LEFT_PADDING),
             y_stats,
             STATUS_FONT_SIZE,
             WHITE,

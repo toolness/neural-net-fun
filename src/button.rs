@@ -1,6 +1,9 @@
 use macroquad::prelude::*;
 
-use crate::text::{CUSTOM_FONT, draw_custom_text};
+use crate::{
+    text::{CUSTOM_FONT, draw_custom_text},
+    zoom::font_scale,
+};
 
 #[derive(Default)]
 pub struct Button<'a> {
@@ -40,8 +43,8 @@ impl<'a> Button<'a> {
     fn draw_foreground(&self) {
         draw_rectangle_lines(self.x, self.y, self.width, self.height, 2.0, WHITE);
         if let Some((text, size, color)) = self.text {
-            let metrics =
-                CUSTOM_FONT.with_borrow(|font| measure_text(text, Some(font), size as u16, 1.0));
+            let metrics = CUSTOM_FONT
+                .with_borrow(|font| measure_text(text, Some(font), size as u16, font_scale()));
             let (center_x, center_y) = (self.x + (self.width / 2.0), self.y + (self.height / 2.0));
             let x = (center_x - metrics.width / 2.0).floor();
             let y = (center_y - metrics.height / 2.0 + metrics.offset_y).floor();
