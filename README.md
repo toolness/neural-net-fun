@@ -47,6 +47,8 @@ sh build-android.sh
 This will build the app, attempt to install it into
 the local android device, and run it via `adb`.
 
+For details on how to debug, see [this Macroquad article](https://macroquad.rs/articles/android/#debug-logs).
+
 ## Related resources
 
 - See also [perceptron-fun], my interactive lab for
